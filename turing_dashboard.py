@@ -14,28 +14,28 @@ UPDATE_SEC = 0.1
 
 LAYOUT_FILE = "/home/edopex/Documents/TURZX/turing-smart-screen-python/layout.json"
 DEFAULT_LAYOUT = {
-  "fps_title": [80, 110],
-  "fps_val": [170, 110],
-  "fps_ms": [310, 120],
-  "cpu_title": [480, 110],
-  "cpu_val": [560, 200],
-  "cpu_temp": [700, 210],
-  "cpu_power": [560, 290],
-  "cpu_mhz": [680, 290],
-  "gpu_title": [880, 110],
-  "gpu_val": [960, 200],
-  "gpu_temp": [1100, 210],
-  "gpu_power": [960, 290],
-  "gpu_mhz": [1080, 290],
-  "gpu_volt_fan": [960, 290],
-  "gpu_power_desc": [1190, 210],
-  "mem_title": [1280, 110],
-  "ram_used": [1280, 200],
-  "vram_used": [1490, 200],
-  "net_stat": [1280, 290],
-  "sys_title": [1620, 110],
-  "sys_time": [1620, 200],
-  "sys_disk": [1830, 215]
+  "fps_title": {"x": 80, "y": 110, "size": 36, "bold": True, "visible": True},
+  "fps_val": {"x": 170, "y": 110, "size": 36, "bold": True, "visible": True},
+  "fps_ms": {"x": 310, "y": 120, "size": 36, "bold": True, "visible": True},
+  "cpu_title": {"x": 480, "y": 110, "size": 36, "bold": True, "visible": True},
+  "cpu_val": {"x": 560, "y": 200, "size": 36, "bold": True, "visible": True},
+  "cpu_temp": {"x": 700, "y": 210, "size": 36, "bold": True, "visible": True},
+  "cpu_power": {"x": 560, "y": 290, "size": 36, "bold": True, "visible": True},
+  "cpu_mhz": {"x": 680, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_title": {"x": 880, "y": 110, "size": 36, "bold": True, "visible": True},
+  "gpu_val": {"x": 960, "y": 200, "size": 36, "bold": True, "visible": True},
+  "gpu_temp": {"x": 1100, "y": 210, "size": 36, "bold": True, "visible": True},
+  "gpu_power": {"x": 960, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_mhz": {"x": 1080, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_volt_fan": {"x": 960, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_power_desc": {"x": 1190, "y": 210, "size": 36, "bold": True, "visible": True},
+  "mem_title": {"x": 1280, "y": 110, "size": 36, "bold": True, "visible": True},
+  "ram_used": {"x": 1280, "y": 200, "size": 36, "bold": True, "visible": True},
+  "vram_used": {"x": 1490, "y": 200, "size": 36, "bold": True, "visible": True},
+  "net_stat": {"x": 1280, "y": 290, "size": 36, "bold": True, "visible": True},
+  "sys_title": {"x": 1620, "y": 110, "size": 36, "bold": True, "visible": True},
+  "sys_time": {"x": 1620, "y": 200, "size": 36, "bold": True, "visible": True},
+  "sys_disk": {"x": 1830, "y": 215, "size": 36, "bold": True, "visible": True}
 }
 
 def load_layout():
@@ -56,7 +56,13 @@ def _f(b,sz):
         try: return ImageFont.truetype(f"/usr/share/fonts/{d}/{'DejaVuSans-Bold' if b else 'DejaVuSans'}.ttf",sz)
         except: pass
     return ImageFont.load_default()
-FT=_f(True,36); FV=_f(True,42); FL=_f(False,28); FS=_f(False,24)
+
+FONT_CACHE = {}
+def get_cached_font(size, bold):
+    key = (size, bold)
+    if key not in FONT_CACHE:
+        FONT_CACHE[key] = _f(bold, size)
+    return FONT_CACHE[key]
 
 def spad(s,d):
     r=len(d)%250
@@ -169,60 +175,72 @@ def build():
         cpu_mhz = int(psutil.cpu_freq().current)
     except: cpu_l, cpu_mhz = 0, 0
     
-    # Load coordinates
+    # Load layout
     ly = load_layout()
-    def co(k):
-        return tuple(ly.get(k, DEFAULT_LAYOUT[k]))
+    def draw_text(key, val_str):
+        item = ly.get(key, DEFAULT_LAYOUT.get(key, {"x": 0, "y": 0, "size": 36, "bold": True, "visible": True}))
+        if isinstance(item, list):
+            x, y = item[0], item[1]
+            size, bold, visible = 36, True, True
+        else:
+            x = item.get("x", 0)
+            y = item.get("y", 0)
+            size = item.get("size", 36)
+            bold = item.get("bold", True)
+            visible = item.get("visible", True)
+        if visible:
+            font = get_cached_font(size, bold)
+            d.text((x, y), str(val_str), fill=W, font=font)
     
     # Row 0: Titles
     if gm:
         fps=int(mh.get("fps",0))
-        d.text(co("fps_title"),"FPS",fill=W,font=FT)
-        d.text(co("fps_val"),f"{fps}",fill=W,font=FV)
-        d.text(co("fps_ms"),f"{mh.get('frametime',0):.1f}ms",fill=W,font=FL)
+        draw_text("fps_title", "FPS")
+        draw_text("fps_val", f"{fps}")
+        draw_text("fps_ms", f"{mh.get('frametime',0):.1f}ms")
     else:
-        d.text(co("fps_title"),"FPS",fill=W,font=FT)
-        d.text(co("fps_val"),"180",fill=W,font=FV)
-        d.text(co("fps_ms"),"5.5ms",fill=W,font=FL)
-    d.text(co("cpu_title"),"CPU",fill=W,font=FT)
-    d.text(co("gpu_title"),"GPU",fill=W,font=FT)
-    d.text(co("mem_title"),"MEMORY",fill=W,font=FT)
-    d.text(co("sys_title"),"SYSTEM",fill=W,font=FT)
+        draw_text("fps_title", "FPS")
+        draw_text("fps_val", "180")
+        draw_text("fps_ms", "5.5ms")
+    draw_text("cpu_title", "CPU")
+    draw_text("gpu_title", "GPU")
+    draw_text("mem_title", "MEMORY")
+    draw_text("sys_title", "SYSTEM")
     
     # Row 1: Main values
     if gm:
-        d.text(co("cpu_val"),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
-        d.text(co("cpu_temp"),f"{int(mh.get('cpu_temp',ct))}°C",fill=W,font=FL)
-        d.text(co("gpu_val"),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
-        d.text(co("gpu_temp"),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=W,font=FL)
-        d.text(co("ram_used"),f"RAM {mh.get('ram_used',ru):.1f}G",fill=W,font=FL)
+        draw_text("cpu_val", f"{mh.get('cpu_load',cpu_l):.0f}%")
+        draw_text("cpu_temp", f"{int(mh.get('cpu_temp',ct))}°C")
+        draw_text("gpu_val", f"{mh.get('gpu_load',gpu['load']):.0f}%")
+        draw_text("gpu_temp", f"{int(mh.get('gpu_temp',gpu['temp']))}°C")
+        draw_text("ram_used", f"RAM {mh.get('ram_used',ru):.1f}G")
         vr=mh.get('gpu_vram_used',0)
-        if vr: d.text(co("vram_used"),f"VRAM {vr:.1f}G",fill=W,font=FL)
+        if vr: draw_text("vram_used", f"VRAM {vr:.1f}G")
     else:
-        d.text(co("cpu_val"),f"{cpu_l:.0f}%",fill=W,font=FV)
-        d.text(co("cpu_temp"),f"{ct}°C",fill=W,font=FL)
-        d.text(co("gpu_val"),f"{gpu['load']}%",fill=W,font=FV)
-        d.text(co("gpu_temp"),f"{gpu['temp']}°C",fill=W,font=FL)
-        d.text(co("gpu_power_desc"),f"{gpu['power']}W",fill=W,font=FL)
-        d.text(co("ram_used"),f"RAM {ru:.1f}/{rt:.0f}G",fill=W,font=FL)
+        draw_text("cpu_val", f"{cpu_l:.0f}%")
+        draw_text("cpu_temp", f"{ct}°C")
+        draw_text("gpu_val", f"{gpu['load']}%")
+        draw_text("gpu_temp", f"{gpu['temp']}°C")
+        draw_text("gpu_power_desc", f"{gpu['power']}W")
+        draw_text("ram_used", f"RAM {ru:.1f}/{rt:.0f}G")
         
-    d.text(co("sys_time"),time.strftime("%H:%M:%S"),fill=W,font=FV)
-    d.text(co("sys_disk"),f"DISK {du_perc:.0f}%",fill=W,font=FS)
+    draw_text("sys_time", time.strftime("%H:%M:%S"))
+    draw_text("sys_disk", f"DISK {du_perc:.0f}%")
     
     # Row 2: Secondary
     if gm:
-        d.text(co("cpu_power"),f"{int(mh.get('cpu_power',0))}W",fill=W,font=FL)
+        draw_text("cpu_power", f"{int(mh.get('cpu_power',0))}W")
         cclk=mh.get('cpu_mhz',cpu_mhz)
-        if cclk: d.text(co("cpu_mhz"),f"{int(cclk)}MHz",fill=W,font=FS)
+        if cclk: draw_text("cpu_mhz", f"{int(cclk)}MHz")
         
-        d.text(co("gpu_power"),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=W,font=FL)
+        draw_text("gpu_power", f"{int(mh.get('gpu_power',gpu['power']))}W")
         gclk=mh.get('gpu_core_clock',0)
-        if gclk: d.text(co("gpu_mhz"),f"{int(gclk)}MHz",fill=W,font=FS)
+        if gclk: draw_text("gpu_mhz", f"{int(gclk)}MHz")
     else:
-        if cpu_mhz: d.text(co("cpu_power"),f"{cpu_mhz}MHz",fill=W,font=FS)
-        d.text(co("gpu_power"),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=W,font=FS)
+        if cpu_mhz: draw_text("cpu_power", f"{cpu_mhz}MHz")
+        draw_text("gpu_power", f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM")
         
-    d.text(co("net_stat"),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=W,font=FS)
+    draw_text("net_stat", f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s")
     
 
     return img.rotate(90, expand=True)

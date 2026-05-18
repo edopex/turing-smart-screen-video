@@ -6,28 +6,28 @@ import os
 
 LAYOUT_FILE = "/home/edopex/Documents/TURZX/turing-smart-screen-python/layout.json"
 DEFAULT_LAYOUT = {
-  "fps_title": [80, 110],
-  "fps_val": [170, 110],
-  "fps_ms": [310, 120],
-  "cpu_title": [480, 110],
-  "cpu_val": [560, 200],
-  "cpu_temp": [700, 210],
-  "cpu_power": [560, 290],
-  "cpu_mhz": [680, 290],
-  "gpu_title": [880, 110],
-  "gpu_val": [960, 200],
-  "gpu_temp": [1100, 210],
-  "gpu_power": [960, 290],
-  "gpu_mhz": [1080, 290],
-  "gpu_volt_fan": [960, 290],
-  "gpu_power_desc": [1190, 210],
-  "mem_title": [1280, 110],
-  "ram_used": [1280, 200],
-  "vram_used": [1490, 200],
-  "net_stat": [1280, 290],
-  "sys_title": [1620, 110],
-  "sys_time": [1620, 200],
-  "sys_disk": [1830, 215]
+  "fps_title": {"x": 80, "y": 110, "size": 36, "bold": True, "visible": True},
+  "fps_val": {"x": 170, "y": 110, "size": 36, "bold": True, "visible": True},
+  "fps_ms": {"x": 310, "y": 120, "size": 36, "bold": True, "visible": True},
+  "cpu_title": {"x": 480, "y": 110, "size": 36, "bold": True, "visible": True},
+  "cpu_val": {"x": 560, "y": 200, "size": 36, "bold": True, "visible": True},
+  "cpu_temp": {"x": 700, "y": 210, "size": 36, "bold": True, "visible": True},
+  "cpu_power": {"x": 560, "y": 290, "size": 36, "bold": True, "visible": True},
+  "cpu_mhz": {"x": 680, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_title": {"x": 880, "y": 110, "size": 36, "bold": True, "visible": True},
+  "gpu_val": {"x": 960, "y": 200, "size": 36, "bold": True, "visible": True},
+  "gpu_temp": {"x": 1100, "y": 210, "size": 36, "bold": True, "visible": True},
+  "gpu_power": {"x": 960, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_mhz": {"x": 1080, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_volt_fan": {"x": 960, "y": 290, "size": 36, "bold": True, "visible": True},
+  "gpu_power_desc": {"x": 1190, "y": 210, "size": 36, "bold": True, "visible": True},
+  "mem_title": {"x": 1280, "y": 110, "size": 36, "bold": True, "visible": True},
+  "ram_used": {"x": 1280, "y": 200, "size": 36, "bold": True, "visible": True},
+  "vram_used": {"x": 1490, "y": 200, "size": 36, "bold": True, "visible": True},
+  "net_stat": {"x": 1280, "y": 290, "size": 36, "bold": True, "visible": True},
+  "sys_title": {"x": 1620, "y": 110, "size": 36, "bold": True, "visible": True},
+  "sys_time": {"x": 1620, "y": 200, "size": 36, "bold": True, "visible": True},
+  "sys_disk": {"x": 1830, "y": 215, "size": 36, "bold": True, "visible": True}
 }
 
 SCALE = 0.5
@@ -36,50 +36,89 @@ WIDTH, HEIGHT = int(1920 * SCALE), int(480 * SCALE)
 class LayoutEditor:
     def __init__(self, root):
         self.root = root
-        self.root.title("Turing Smart Screen 8.8\" Layout Editor")
+        self.root.title("Turing Smart Screen 8.8\" Layout & Properties Editor")
         self.root.configure(bg="#0f0f13")
-        self.root.geometry(f"{WIDTH + 40}x{HEIGHT + 140}")
+        self.root.geometry(f"{WIDTH + 340}x{HEIGHT + 140}")
         self.root.resizable(False, False)
 
+        # Selected Key State
+        self.selected_key = None
+        self.layout = {}
+        self.load_layout()
+
+        # Main Layout: Left Area (Editor) and Right Area (Properties Panel)
+        main_pan = tk.Frame(root, bg="#0f0f13")
+        main_pan.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
+
+        left_frame = tk.Frame(main_pan, bg="#0f0f13")
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        right_frame = tk.LabelFrame(main_pan, text=" Element Properties ", fg="#00b4ff", 
+                                     bg="#161622", bd=1, padx=15, pady=15, 
+                                     font=("Helvetica", 10, "bold"))
+        right_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=15, pady=10)
+
         # Title Label
-        title_lbl = tk.Label(root, text="TURING 8.8\" DRAG & DROP LAYOUT EDITOR", 
-                             fg="#00b4ff", bg="#0f0f13", font=("Helvetica", 14, "bold"))
-        title_lbl.pack(pady=10)
+        title_lbl = tk.Label(left_frame, text="TURING 8.8\" ADVANCED DRAG & PROPERTIES EDITOR", 
+                             fg="#00b4ff", bg="#0f0f13", font=("Helvetica", 12, "bold"))
+        title_lbl.pack(pady=5)
 
         # Instructions
-        desc_lbl = tk.Label(root, text="Drag any element below to reposition it in real-time. Changes are auto-saved to layout.json.", 
-                            fg="#a0a0aa", bg="#0f0f13", font=("Helvetica", 9))
+        desc_lbl = tk.Label(left_frame, text="Click an element to edit properties. Drag to reposition. Double click a label to toggle visibility.", 
+                             fg="#a0a0aa", bg="#0f0f13", font=("Helvetica", 9))
         desc_lbl.pack(pady=2)
 
         # Canvas
-        self.canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT, bg="#16161e", 
+        self.canvas = tk.Canvas(left_frame, width=WIDTH, height=HEIGHT, bg="#16161e", 
                                highlightthickness=1, highlightbackground="#00b4ff")
-        self.canvas.pack(padx=20, pady=10)
+        self.canvas.pack(padx=10, pady=5)
 
-        # Subtle layout grid columns (at 50% scale)
+        # Guidelines (at 50% scale)
         for col_x in [80, 480, 880, 1280, 1620]:
             x = int(col_x * SCALE)
             self.canvas.create_line(x, 0, x, HEIGHT, fill="#252538", dash=(4, 4))
-
-        # Horizontal guidelines
         for row_y in [110, 200, 290]:
             y = int(row_y * SCALE)
             self.canvas.create_line(0, y, WIDTH, y, fill="#252538", dash=(4, 4))
-
-        self.layout = {}
-        self.load_layout()
 
         self.drag_item = None
         self.drag_offset_x = 0
         self.drag_offset_y = 0
 
-        self.draw_elements()
+        # Build Sidebar Controls in Right Frame
+        self.sel_title_lbl = tk.Label(right_frame, text="Selected: None", fg="#ffffff", 
+                                      bg="#161622", font=("Helvetica", 11, "bold"))
+        self.sel_title_lbl.pack(pady=8)
 
-        # Controls Frame
-        ctrl_frame = tk.Frame(root, bg="#0f0f13")
+        # Visibility Toggle
+        self.vis_var = tk.BooleanVar(value=True)
+        self.vis_chk = tk.Checkbutton(right_frame, text="Visible on Screen", variable=self.vis_var, 
+                                      command=self.update_selected_property, fg="#ffffff", bg="#161622", 
+                                      activeforeground="#ffffff", activebackground="#161622", 
+                                      selectcolor="#161622", font=("Helvetica", 9, "bold"))
+        self.vis_chk.pack(anchor=tk.W, pady=8)
+
+        # Font Size
+        tk.Label(right_frame, text="Font Size:", fg="#a0a0aa", bg="#161622", font=("Helvetica", 9)).pack(anchor=tk.W, pady=2)
+        self.size_scale = tk.Scale(right_frame, from_=12, to=64, resolution=2, orient=tk.HORIZONTAL, 
+                                    bg="#161622", fg="#ffffff", highlightthickness=0, bd=0, 
+                                    troughcolor="#252538", activebackground="#00b4ff",
+                                    command=lambda e: self.update_selected_property())
+        self.size_scale.pack(fill=tk.X, pady=4)
+
+        # Bold Toggle
+        self.bold_var = tk.BooleanVar(value=True)
+        self.bold_chk = tk.Checkbutton(right_frame, text="Bold Weight", variable=self.bold_var, 
+                                       command=self.update_selected_property, fg="#ffffff", bg="#161622", 
+                                       activeforeground="#ffffff", activebackground="#161622", 
+                                       selectcolor="#161622", font=("Helvetica", 9, "bold"))
+        self.bold_chk.pack(anchor=tk.W, pady=8)
+
+        # Footer Button Controls
+        ctrl_frame = tk.Frame(left_frame, bg="#0f0f13")
         ctrl_frame.pack(pady=10)
 
-        reset_btn = tk.Button(ctrl_frame, text="Reset to Defaults", command=self.reset_layout, 
+        reset_btn = tk.Button(ctrl_frame, text="Reset Defaults", command=self.reset_layout, 
                               fg="#ff4f4f", bg="#1e1e24", activeforeground="#ff4f4f", 
                               activebackground="#2b2b36", highlightthickness=0, bd=0, 
                               padx=15, pady=5, font=("Helvetica", 10, "bold"))
@@ -97,14 +136,30 @@ class LayoutEditor:
                               padx=15, pady=5, font=("Helvetica", 10, "bold"))
         close_btn.pack(side=tk.LEFT, padx=10)
 
-        # Bind window manager 'X' button close
         self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
+
+        # Draw Canvas Elements
+        self.draw_elements()
+        self.update_sidebar()
 
     def load_layout(self):
         try:
             if os.path.exists(LAYOUT_FILE):
                 with open(LAYOUT_FILE) as f:
                     self.layout = json.load(f)
+                    # Complete missing properties dynamically
+                    for k, val in DEFAULT_LAYOUT.items():
+                        if k not in self.layout:
+                            self.layout[k] = val.copy()
+                        elif isinstance(self.layout[k], list):
+                            # Upgrade from [x, y] coordinates
+                            self.layout[k] = {
+                                "x": self.layout[k][0],
+                                "y": self.layout[k][1],
+                                "size": 36,
+                                "bold": True,
+                                "visible": True
+                            }
                     return
         except Exception as e:
             messagebox.showwarning("Error Loading Layout", f"Could not load layout.json, using defaults.\n{e}")
@@ -113,85 +168,80 @@ class LayoutEditor:
     def draw_elements(self):
         self.canvas.delete("draggable")
         
-        # Human-readable representation text for each key
         display_texts = {
-            "fps_title": "[FPS Title]",
-            "fps_val": "180",
-            "fps_ms": "5.5ms",
-            "cpu_title": "[CPU Title]",
-            "cpu_val": "45%",
-            "cpu_temp": "55°C",
-            "cpu_power": "42W",
-            "cpu_mhz": "4200MHz",
-            "gpu_title": "[GPU Title]",
-            "gpu_val": "78%",
-            "gpu_temp": "62°C",
-            "gpu_power": "180W",
-            "gpu_mhz": "1950MHz",
-            "gpu_volt_fan": "1.05V  2100RPM",
-            "gpu_power_desc": "120W",
-            "mem_title": "[MEMORY Title]",
-            "ram_used": "7.5G/16.0G",
-            "vram_used": "VRAM 4.2G",
-            "net_stat": "NET ↓240 ↑45 KB/s",
-            "sys_title": "[SYSTEM Title]",
-            "sys_time": "12:34:56",
-            "sys_disk": "DISK 35%"
+            "fps_title": "[FPS Title]", "fps_val": "180", "fps_ms": "5.5ms",
+            "cpu_title": "[CPU Title]", "cpu_val": "45%", "cpu_temp": "55°C",
+            "cpu_power": "42W", "cpu_mhz": "4200MHz",
+            "gpu_title": "[GPU Title]", "gpu_val": "78%", "gpu_temp": "62°C",
+            "gpu_power": "180W", "gpu_mhz": "1950MHz", "gpu_volt_fan": "1.05V 2100RPM", "gpu_power_desc": "120W",
+            "mem_title": "[MEMORY Title]", "ram_used": "7.5G/16.0G", "vram_used": "VRAM 4.2G", "net_stat": "NET ↓240 ↑45 KB/s",
+            "sys_title": "[SYSTEM Title]", "sys_time": "12:34:56", "sys_disk": "DISK 35%"
         }
         
-        # Colors for elements
         colors = {
-            "fps_title": "#00b4ff",
-            "cpu_title": "#00b4ff",
-            "gpu_title": "#00b4ff",
-            "mem_title": "#00b4ff",
-            "sys_title": "#00b4ff",
-            "fps_val": "#00ff66",
-            "sys_time": "#ffffff"
+            "fps_title": "#00b4ff", "cpu_title": "#00b4ff", "gpu_title": "#00b4ff",
+            "mem_title": "#00b4ff", "sys_title": "#00b4ff", "fps_val": "#00ff66", "sys_time": "#ffffff"
         }
 
-        for key, coord in self.layout.items():
-            x = int(coord[0] * SCALE)
-            y = int(coord[1] * SCALE)
+        for key, prop in self.layout.items():
+            x = int(prop.get("x", 0) * SCALE)
+            y = int(prop.get("y", 0) * SCALE)
+            size = int(prop.get("size", 36) * SCALE)
+            bold = prop.get("bold", True)
+            visible = prop.get("visible", True)
+
             txt = display_texts.get(key, f"[{key}]")
+            font_weight = "bold" if bold else "normal"
             
-            # Larger fonts for main values
-            is_main = key in ["fps_val", "cpu_val", "gpu_val", "sys_time"]
-            font_size = 12 if is_main else 8
-            font_weight = "bold" if (is_main or "title" in key) else "normal"
-            
-            color = colors.get(key, "#ffffff")
-            if "title" in key:
-                color = "#00b4ff"
-            elif "val" in key and key != "fps_val":
-                color = "#ffffff"
-            elif key in ["fps_ms", "cpu_temp", "gpu_temp", "ram_used", "vram_used"]:
-                color = "#e0e0e0"
-            elif key in ["cpu_power", "gpu_power", "cpu_mhz", "gpu_mhz", "gpu_power_desc"]:
-                color = "#a0a0aa"
-            
+            # Use distinct visual indicators for active vs disabled (hidden) elements
+            if visible:
+                color = colors.get(key, "#ffffff")
+                if "title" in key:
+                    color = "#00b4ff"
+                elif "val" in key and key != "fps_val":
+                    color = "#ffffff"
+                elif key in ["fps_ms", "cpu_temp", "gpu_temp", "ram_used", "vram_used"]:
+                    color = "#e0e0e0"
+                elif key in ["cpu_power", "gpu_power", "cpu_mhz", "gpu_mhz", "gpu_power_desc"]:
+                    color = "#a0a0aa"
+            else:
+                color = "#454552" # Dark, semi-transparent grey for hidden/disabled elements
+
             # Create text canvas item
-            item = self.canvas.create_text(x, y, text=txt, fill=color, 
-                                          font=("Helvetica", font_size, font_weight), 
-                                          anchor=tk.NW, tags=("draggable", key))
-            
-            # Bind events to this item
+            item = self.canvas.create_text(
+                x, y, text=txt, fill=color, 
+                font=("Helvetica", size, font_weight), 
+                anchor=tk.NW, tags=("draggable", key)
+            )
+
+            # Draw a tiny neon indicator if this is the selected element
+            if key == self.selected_key:
+                bbox = self.canvas.bbox(item)
+                if bbox:
+                    self.canvas.create_rectangle(
+                        bbox[0]-2, bbox[1]-2, bbox[2]+2, bbox[3]+2, 
+                        outline="#00b4ff", width=1, tags=("draggable", "selection_box")
+                    )
+
+            # Bind mouse and click events
             self.canvas.tag_bind(item, "<Button-1>", lambda event, k=key, i=item: self.start_drag(event, k, i))
             self.canvas.tag_bind(item, "<B1-Motion>", self.drag)
             self.canvas.tag_bind(item, "<ButtonRelease-1>", self.stop_drag)
+            self.canvas.tag_bind(item, "<Double-Button-1>", lambda event, k=key: self.toggle_visibility(k))
 
     def start_drag(self, event, key, item):
+        self.selected_key = key
         self.drag_item = item
         self.drag_key = key
-        # Get current coordinates on the canvas
         cx, cy = self.canvas.coords(item)
-        # Calculate mouse offset relative to anchor (NW)
         self.drag_offset_x = event.x - cx
         self.drag_offset_y = event.y - cy
+        
+        self.update_sidebar()
+        self.draw_elements()
 
     def drag(self, event):
         if self.drag_item:
-            # Set new coordinates, bounded to canvas size
             new_x = max(0, min(event.x - self.drag_offset_x, WIDTH - 10))
             new_y = max(0, min(event.y - self.drag_offset_y, HEIGHT - 10))
             self.canvas.coords(self.drag_item, new_x, new_y)
@@ -199,12 +249,45 @@ class LayoutEditor:
     def stop_drag(self, event):
         if self.drag_item:
             cx, cy = self.canvas.coords(self.drag_item)
-            # Scale coordinates back to 1920x480 space and save
             orig_x = int(cx / SCALE)
             orig_y = int(cy / SCALE)
-            self.layout[self.drag_key] = [orig_x, orig_y]
+            self.layout[self.drag_key]["x"] = orig_x
+            self.layout[self.drag_key]["y"] = orig_y
             self.drag_item = None
             self.save_layout()
+            self.draw_elements()
+
+    def toggle_visibility(self, key):
+        self.layout[key]["visible"] = not self.layout[key]["visible"]
+        if self.selected_key == key:
+            self.vis_var.set(self.layout[key]["visible"])
+        self.save_layout()
+        self.draw_elements()
+
+    def update_sidebar(self):
+        if self.selected_key:
+            prop = self.layout[self.selected_key]
+            self.sel_title_lbl.configure(text=f"Selected: {self.selected_key}", fg="#00b4ff")
+            self.vis_var.set(prop.get("visible", True))
+            self.size_scale.set(prop.get("size", 36))
+            self.bold_var.set(prop.get("bold", True))
+            self.vis_chk.configure(state=tk.NORMAL)
+            self.size_scale.configure(state=tk.NORMAL)
+            self.bold_chk.configure(state=tk.NORMAL)
+        else:
+            self.sel_title_lbl.configure(text="Selected: None", fg="#a0a0aa")
+            self.vis_chk.configure(state=tk.DISABLED)
+            self.size_scale.configure(state=tk.DISABLED)
+            self.bold_chk.configure(state=tk.DISABLED)
+
+    def update_selected_property(self):
+        if self.selected_key:
+            self.layout[self.selected_key]["visible"] = self.vis_var.get()
+            self.layout[self.selected_key]["size"] = self.size_scale.get()
+            self.layout[self.selected_key]["bold"] = self.bold_var.get()
+            self.save_layout()
+            # Redraw selection highlights and font sizes instantly
+            self.draw_elements()
 
     def save_layout(self):
         try:
@@ -214,8 +297,10 @@ class LayoutEditor:
             messagebox.showerror("Error Saving Layout", f"Could not write to layout.json:\n{e}")
 
     def reset_layout(self):
-        if messagebox.askyesno("Reset Coordinates", "Are you sure you want to reset all coordinates to their defaults?"):
+        if messagebox.askyesno("Reset Coordinates", "Are you sure you want to reset all coordinates and settings to defaults?"):
             self.layout = DEFAULT_LAYOUT.copy()
+            self.selected_key = None
+            self.update_sidebar()
             self.draw_elements()
             self.save_layout()
 

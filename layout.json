@@ -1,90 +1,24 @@
 {
-  "fps_title": [
-    26,
-    26
-  ],
-  "fps_val": [
-    154,
-    18
-  ],
-  "fps_ms": [
-    310,
-    120
-  ],
-  "cpu_title": [
-    480,
-    110
-  ],
-  "cpu_val": [
-    560,
-    200
-  ],
-  "cpu_temp": [
-    700,
-    210
-  ],
-  "cpu_power": [
-    560,
-    290
-  ],
-  "cpu_mhz": [
-    680,
-    290
-  ],
-  "gpu_title": [
-    880,
-    110
-  ],
-  "gpu_val": [
-    960,
-    200
-  ],
-  "gpu_temp": [
-    1100,
-    210
-  ],
-  "gpu_power": [
-    960,
-    290
-  ],
-  "gpu_mhz": [
-    1080,
-    290
-  ],
-  "gpu_volt_fan": [
-    960,
-    290
-  ],
-  "gpu_power_desc": [
-    1190,
-    210
-  ],
-  "mem_title": [
-    1280,
-    110
-  ],
-  "ram_used": [
-    1280,
-    200
-  ],
-  "vram_used": [
-    1490,
-    200
-  ],
-  "net_stat": [
-    1280,
-    290
-  ],
-  "sys_title": [
-    1620,
-    110
-  ],
-  "sys_time": [
-    1620,
-    200
-  ],
-  "sys_disk": [
-    1830,
-    215
-  ]
+  "fps_title": {"x": 80, "y": 110, "size": 36, "bold": true, "visible": true},
+  "fps_val": {"x": 170, "y": 110, "size": 36, "bold": true, "visible": true},
+  "fps_ms": {"x": 310, "y": 120, "size": 36, "bold": true, "visible": true},
+  "cpu_title": {"x": 480, "y": 110, "size": 36, "bold": true, "visible": true},
+  "cpu_val": {"x": 560, "y": 200, "size": 36, "bold": true, "visible": true},
+  "cpu_temp": {"x": 700, "y": 210, "size": 36, "bold": true, "visible": true},
+  "cpu_power": {"x": 560, "y": 290, "size": 36, "bold": true, "visible": true},
+  "cpu_mhz": {"x": 680, "y": 290, "size": 36, "bold": true, "visible": true},
+  "gpu_title": {"x": 880, "y": 110, "size": 36, "bold": true, "visible": true},
+  "gpu_val": {"x": 960, "y": 200, "size": 36, "bold": true, "visible": true},
+  "gpu_temp": {"x": 1100, "y": 210, "size": 36, "bold": true, "visible": true},
+  "gpu_power": {"x": 960, "y": 290, "size": 36, "bold": true, "visible": true},
+  "gpu_mhz": {"x": 1080, "y": 290, "size": 36, "bold": true, "visible": true},
+  "gpu_volt_fan": {"x": 960, "y": 290, "size": 36, "bold": true, "visible": true},
+  "gpu_power_desc": {"x": 1190, "y": 210, "size": 36, "bold": true, "visible": true},
+  "mem_title": {"x": 1280, "y": 110, "size": 36, "bold": true, "visible": true},
+  "ram_used": {"x": 1280, "y": 200, "size": 36, "bold": true, "visible": true},
+  "vram_used": {"x": 1490, "y": 200, "size": 36, "bold": true, "visible": true},
+  "net_stat": {"x": 1280, "y": 290, "size": 36, "bold": true, "visible": true},
+  "sys_title": {"x": 1620, "y": 110, "size": 36, "bold": true, "visible": true},
+  "sys_time": {"x": 1620, "y": 200, "size": 36, "bold": true, "visible": true},
+  "sys_disk": {"x": 1830, "y": 215, "size": 36, "bold": true, "visible": true}
 }
