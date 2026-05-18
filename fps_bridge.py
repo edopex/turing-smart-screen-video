@@ -4,7 +4,7 @@ import glob
 import json
 
 # Configuración del puente
-LOG_DIR = "/home/edopex/mangohud_logs"
+LOG_DIR = os.path.expanduser("~/mangohud_logs")
 TARGET_FILE_FPS = "/tmp/turing_fps"
 TARGET_FILE_JSON = "/tmp/mangohud_stats.json"
 
