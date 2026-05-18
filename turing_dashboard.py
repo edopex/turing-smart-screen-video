@@ -179,7 +179,7 @@ def build():
         
     d.text((cols[3],y2),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=DG,font=FS)
     
-    # Rendición absoluta. Regresamos a rotate(270).
+
     return img.rotate(90, expand=True)
 
 def phase1():
@@ -232,15 +232,16 @@ def main():
             print(f"   [{n}] {mode} {el:.1f}s {resp.decode(errors='ignore')}")
             end=time.time()+UPDATE_SEC
             while running and time.time()<end: time.sleep(0.3)
-        except serial.SerialTimeoutException:
-            print("   ⚠️ Timeout, reconnecting...");time.sleep(2)
+        except Exception as e:
+            print(f"   ⚠️ Connection issue ({e}), reconnecting...");time.sleep(2)
             try: s.close()
             except: pass
-            s=serial.Serial(COM_PORT,115200,timeout=2,write_timeout=2);time.sleep(0.5)
-            spad(s,bytearray([0x01,0xef,0x69,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0xc5,0xd3]))
-            time.sleep(0.5);s.read(23)
-        except Exception as e:
-            print(f"   ❌ {e}");time.sleep(2)
+            try:
+                s=serial.Serial(COM_PORT,115200,timeout=2,write_timeout=2);time.sleep(0.5)
+                spad(s,bytearray([0x01,0xef,0x69,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0xc5,0xd3]))
+                time.sleep(0.5);s.read(23)
+            except Exception as re:
+                print(f"   ❌ Reconnect failed: {re}");time.sleep(2)
     try: s.close()
     except: pass
     print("\n✅ Stopped.")

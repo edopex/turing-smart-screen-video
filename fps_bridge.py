@@ -55,6 +55,9 @@ if __name__ == "__main__":
     print(f"--- Puente de Estadísticas MangoHud (V2 - Inteligente) ---")
     last_state = None
     
+    # Nos aseguramos de que el directorio exista
+    os.makedirs(LOG_DIR, exist_ok=True)
+    
     # Limpiamos archivos al empezar
     if os.path.exists(TARGET_FILE_JSON): os.remove(TARGET_FILE_JSON)
     
