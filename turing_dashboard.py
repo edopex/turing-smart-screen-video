@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Turing 8.8" — Video + Live Telemetry. Usage: python3 turing_dashboard.py"""
-import serial, time, os, json, signal, sys
+import serial, time, os, json, signal, sys, numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from library.lcd.serialize import image_to_BGRA, chunked
 
@@ -10,7 +10,7 @@ DW, DH = 480, 1920
 BRIGHTNESS = 0x8c
 GREEN = (0, 200, 0)
 MANGOHUD_JSON = "/tmp/mangohud_stats.json"
-UPDATE_SEC = 3
+UPDATE_SEC = 0.1
 
 running = True
 signal.signal(signal.SIGINT, lambda s,f: globals().update(running=False))
@@ -29,26 +29,37 @@ def spad(s,d):
     s.write(d); s.flush()
 
 def image_to_BGRA(img):
-    img=img.convert('RGBA'); bgra=bytearray()
-    for y in range(img.height):
-        for x in range(img.width):
-            r,g,b,a=img.getpixel((x,y))
-            if (r,g,b)==GREEN: bgra.extend([0,0,0,0])
-            else: bgra.extend([b,g,r,255])
-    return bytes(bgra),4
+    arr = np.array(img.convert('RGBA'))
+    mask = (arr[:, :, 0] == 0) & (arr[:, :, 1] == 200) & (arr[:, :, 2] == 0)
+    bgra = np.empty_like(arr)
+    bgra[:, :, 0] = arr[:, :, 2] # B
+    bgra[:, :, 1] = arr[:, :, 1] # G
+    bgra[:, :, 2] = arr[:, :, 0] # R
+    bgra[:, :, 3] = 255          # A
+    bgra[mask] = [0, 0, 0, 0]
+    return bgra.tobytes(), 4
 
 def send_full(s,img):
     img=img.rotate(180,expand=True)
     bgra,_=image_to_BGRA(img)
     fd=b'\x00'.join(chunked(bgra,249))
-    spad(s,bytearray([0x86,0xef,0x69,0x00,0x00,0x00,0x01]));time.sleep(0.05)
-    s.write(bytearray([0x2c]*250));s.flush();time.sleep(0.05)
+    spad(s,bytearray([0x86,0xef,0x69,0x00,0x00,0x00,0x01]));time.sleep(0.01)
+    s.write(bytearray([0x2c]*250));s.flush();time.sleep(0.01)
     dc=bytearray([0xc8,0xef,0x69,0x00,0x38,0x40])+int(DW*DW/64).to_bytes(2,"big")
-    spad(s,dc);time.sleep(0.05)
+    spad(s,dc);time.sleep(0.01)
     spad(s,bytearray([0xFF])+bytearray(fd))
-    time.sleep(0.5);resp=s.read(1024).strip(b'\x00')
+    
+    t0_read = time.time()
+    resp = b""
+    while b'full_png_sucess' not in resp and (time.time() - t0_read) < 1.0:
+        chunk = s.read(1)
+        if chunk:
+            resp += chunk
+        else:
+            time.sleep(0.005)
+            
     spad(s,bytearray([0xcf,0xef,0x69,0x00,0x00,0x00,0x01]))
-    time.sleep(0.3);s.read(1024)
+    time.sleep(0.01);s.read(1024)
     return resp
 
 def read_gpu():
@@ -220,7 +231,7 @@ def main():
     print("╚═══════════════════════════════════════════╝\n")
     phase1()
     print("\n📊 Live overlay (same serial session)...\n")
-    s=serial.Serial(COM_PORT,115200,timeout=2,write_timeout=2);time.sleep(0.5)
+    s=serial.Serial(COM_PORT,115200,timeout=0.01,write_timeout=2);time.sleep(0.5)
     spad(s,bytearray([0x01,0xef,0x69,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0xc5,0xd3]))
     time.sleep(0.5);s.read(23)
     n=0
@@ -231,13 +242,13 @@ def main():
             mode="🎮" if read_mh() else "🖥️"
             print(f"   [{n}] {mode} {el:.1f}s {resp.decode(errors='ignore')}")
             end=time.time()+UPDATE_SEC
-            while running and time.time()<end: time.sleep(0.3)
+            while running and time.time()<end: time.sleep(0.05)
         except Exception as e:
             print(f"   ⚠️ Connection issue ({e}), reconnecting...");time.sleep(2)
             try: s.close()
             except: pass
             try:
-                s=serial.Serial(COM_PORT,115200,timeout=2,write_timeout=2);time.sleep(0.5)
+                s=serial.Serial(COM_PORT,115200,timeout=0.01,write_timeout=2);time.sleep(0.5)
                 spad(s,bytearray([0x01,0xef,0x69,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0xc5,0xd3]))
                 time.sleep(0.5);s.read(23)
             except Exception as re:
