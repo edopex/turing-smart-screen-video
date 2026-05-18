@@ -12,6 +12,41 @@ GREEN = (0, 200, 0)
 MANGOHUD_JSON = "/tmp/mangohud_stats.json"
 UPDATE_SEC = 0.1
 
+LAYOUT_FILE = "/home/edopex/Documents/TURZX/turing-smart-screen-python/layout.json"
+DEFAULT_LAYOUT = {
+  "fps_title": [80, 110],
+  "fps_val": [170, 110],
+  "fps_ms": [310, 120],
+  "cpu_title": [480, 110],
+  "cpu_val": [560, 200],
+  "cpu_temp": [700, 210],
+  "cpu_power": [560, 290],
+  "cpu_mhz": [680, 290],
+  "gpu_title": [880, 110],
+  "gpu_val": [960, 200],
+  "gpu_temp": [1100, 210],
+  "gpu_power": [960, 290],
+  "gpu_mhz": [1080, 290],
+  "gpu_volt_fan": [960, 290],
+  "gpu_power_desc": [1190, 210],
+  "mem_title": [1280, 110],
+  "ram_used": [1280, 200],
+  "vram_used": [1490, 200],
+  "net_stat": [1280, 290],
+  "sys_title": [1620, 110],
+  "sys_time": [1620, 200],
+  "sys_disk": [1830, 215]
+}
+
+def load_layout():
+    try:
+        if os.path.exists(LAYOUT_FILE):
+            with open(LAYOUT_FILE) as f:
+                return json.load(f)
+    except:
+        pass
+    return DEFAULT_LAYOUT
+
 running = True
 signal.signal(signal.SIGINT, lambda s,f: globals().update(running=False))
 signal.signal(signal.SIGTERM, lambda s,f: globals().update(running=False))
@@ -137,58 +172,60 @@ def build():
         cpu_mhz = int(psutil.cpu_freq().current)
     except: cpu_l, cpu_mhz = 0, 0
     
-    # Landscape layout: columns across 1920px, rows in 480px
-    cols=[80, 480, 880, 1280, 1620]; y0=110; y1=200; y2=290
+    # Load coordinates
+    ly = load_layout()
+    def co(k):
+        return tuple(ly.get(k, DEFAULT_LAYOUT[k]))
     
     # Row 0: Titles
     if gm:
         fps=int(mh.get("fps",0))
-        d.text((cols[0],y0),"FPS",fill=W,font=FT)
-        d.text((cols[0]+90,y0),f"{fps}",fill=W,font=FV)
-        d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=W,font=FL)
+        d.text(co("fps_title"),"FPS",fill=W,font=FT)
+        d.text(co("fps_val"),f"{fps}",fill=W,font=FV)
+        d.text(co("fps_ms"),f"{mh.get('frametime',0):.1f}ms",fill=W,font=FL)
     else:
-        d.text((cols[0],y0),"FPS",fill=W,font=FT)
-        d.text((cols[0]+90,y0),"180",fill=W,font=FV)
-        d.text((cols[0]+230,y0+10),"5.5ms",fill=W,font=FL)
-    d.text((cols[1],y0),"CPU",fill=W,font=FT)
-    d.text((cols[2],y0),"GPU",fill=W,font=FT)
-    d.text((cols[3],y0),"MEMORY",fill=W,font=FT)
-    d.text((cols[4],y0),"SYSTEM",fill=W,font=FT)
+        d.text(co("fps_title"),"FPS",fill=W,font=FT)
+        d.text(co("fps_val"),"180",fill=W,font=FV)
+        d.text(co("fps_ms"),"5.5ms",fill=W,font=FL)
+    d.text(co("cpu_title"),"CPU",fill=W,font=FT)
+    d.text(co("gpu_title"),"GPU",fill=W,font=FT)
+    d.text(co("mem_title"),"MEMORY",fill=W,font=FT)
+    d.text(co("sys_title"),"SYSTEM",fill=W,font=FT)
     
     # Row 1: Main values
     if gm:
-        d.text((cols[1]+80,y1),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
-        d.text((cols[1]+220,y1+10),f"{int(mh.get('cpu_temp',ct))}°C",fill=W,font=FL)
-        d.text((cols[2]+80,y1),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
-        d.text((cols[2]+220,y1+10),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=W,font=FL)
-        d.text((cols[3],y1),f"RAM {mh.get('ram_used',ru):.1f}G",fill=W,font=FL)
+        d.text(co("cpu_val"),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
+        d.text(co("cpu_temp"),f"{int(mh.get('cpu_temp',ct))}°C",fill=W,font=FL)
+        d.text(co("gpu_val"),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
+        d.text(co("gpu_temp"),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=W,font=FL)
+        d.text(co("ram_used"),f"RAM {mh.get('ram_used',ru):.1f}G",fill=W,font=FL)
         vr=mh.get('gpu_vram_used',0)
-        if vr: d.text((cols[3]+210,y1),f"VRAM {vr:.1f}G",fill=W,font=FL)
+        if vr: d.text(co("vram_used"),f"VRAM {vr:.1f}G",fill=W,font=FL)
     else:
-        d.text((cols[1]+80,y1),f"{cpu_l:.0f}%",fill=W,font=FV)
-        d.text((cols[1]+220,y1+10),f"{ct}°C",fill=W,font=FL)
-        d.text((cols[2]+80,y1),f"{gpu['load']}%",fill=W,font=FV)
-        d.text((cols[2]+210,y1+10),f"{gpu['temp']}°C",fill=W,font=FL)
-        d.text((cols[2]+310,y1+10),f"{gpu['power']}W",fill=W,font=FL)
-        d.text((cols[3],y1),f"RAM {ru:.1f}/{rt:.0f}G",fill=W,font=FL)
+        d.text(co("cpu_val"),f"{cpu_l:.0f}%",fill=W,font=FV)
+        d.text(co("cpu_temp"),f"{ct}°C",fill=W,font=FL)
+        d.text(co("gpu_val"),f"{gpu['load']}%",fill=W,font=FV)
+        d.text(co("gpu_temp"),f"{gpu['temp']}°C",fill=W,font=FL)
+        d.text(co("gpu_power_desc"),f"{gpu['power']}W",fill=W,font=FL)
+        d.text(co("ram_used"),f"RAM {ru:.1f}/{rt:.0f}G",fill=W,font=FL)
         
-    d.text((cols[4],y1),time.strftime("%H:%M:%S"),fill=W,font=FV)
-    d.text((cols[4]+210,y1+15),f"DISK {du_perc:.0f}%",fill=W,font=FS)
+    d.text(co("sys_time"),time.strftime("%H:%M:%S"),fill=W,font=FV)
+    d.text(co("sys_disk"),f"DISK {du_perc:.0f}%",fill=W,font=FS)
     
     # Row 2: Secondary
     if gm:
-        d.text((cols[1]+80,y2),f"{int(mh.get('cpu_power',0))}W",fill=W,font=FL)
+        d.text(co("cpu_power"),f"{int(mh.get('cpu_power',0))}W",fill=W,font=FL)
         cclk=mh.get('cpu_mhz',cpu_mhz)
-        if cclk: d.text((cols[1]+200,y2),f"{int(cclk)}MHz",fill=W,font=FS)
+        if cclk: d.text(co("cpu_mhz"),f"{int(cclk)}MHz",fill=W,font=FS)
         
-        d.text((cols[2]+80,y2),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=W,font=FL)
+        d.text(co("gpu_power"),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=W,font=FL)
         gclk=mh.get('gpu_core_clock',0)
-        if gclk: d.text((cols[2]+200,y2),f"{int(gclk)}MHz",fill=W,font=FS)
+        if gclk: d.text(co("gpu_mhz"),f"{int(gclk)}MHz",fill=W,font=FS)
     else:
-        if cpu_mhz: d.text((cols[1]+80,y2),f"{cpu_mhz}MHz",fill=W,font=FS)
-        d.text((cols[2]+80,y2),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=W,font=FS)
+        if cpu_mhz: d.text(co("cpu_power"),f"{cpu_mhz}MHz",fill=W,font=FS)
+        d.text(co("gpu_power"),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=W,font=FS)
         
-    d.text((cols[3],y2),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=W,font=FS)
+    d.text(co("net_stat"),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=W,font=FS)
     
 
     return img.rotate(90, expand=True)
