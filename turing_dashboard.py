@@ -97,9 +97,7 @@ def read_net():
         return rx,tx
     except: return 0,0
 
-W=(255,255,255); G=(160,160,160); DG=(100,100,100); CT=(0,180,255)
-def tc(t): return (100,200,255) if t<60 else (255,200,0) if t<80 else (255,80,80)
-def fc(f): return (100,255,100) if f>=60 else (255,255,0) if f>=30 else (255,80,80)
+W=(255,255,255)
 
 # Se eliminó la versión "optimizada" de image_to_BGRA.
 # La versión lenta de arriba actúa como un delay natural necesario.
@@ -134,52 +132,52 @@ def build():
     # Row 0: Titles
     if gm:
         fps=int(mh.get("fps",0))
-        d.text((cols[0],y0),"FPS",fill=CT,font=FT)
-        d.text((cols[0]+90,y0),f"{fps}",fill=fc(fps),font=FV)
-        d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=G,font=FL)
+        d.text((cols[0],y0),"FPS",fill=W,font=FT)
+        d.text((cols[0]+90,y0),f"{fps}",fill=W,font=FV)
+        d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=W,font=FL)
     else:
-        d.text((cols[0],y0),"FPS",fill=CT,font=FT)
-        d.text((cols[0]+90,y0),"180",fill=G,font=FV)
-        d.text((cols[0]+230,y0+10),"5.5ms",fill=G,font=FL)
-    d.text((cols[1],y0),"CPU",fill=CT,font=FT)
-    d.text((cols[2],y0),"GPU",fill=CT,font=FT)
-    d.text((cols[3],y0),"MEMORY",fill=CT,font=FT)
-    d.text((cols[4],y0),"SYSTEM",fill=CT,font=FT)
+        d.text((cols[0],y0),"FPS",fill=W,font=FT)
+        d.text((cols[0]+90,y0),"180",fill=W,font=FV)
+        d.text((cols[0]+230,y0+10),"5.5ms",fill=W,font=FL)
+    d.text((cols[1],y0),"CPU",fill=W,font=FT)
+    d.text((cols[2],y0),"GPU",fill=W,font=FT)
+    d.text((cols[3],y0),"MEMORY",fill=W,font=FT)
+    d.text((cols[4],y0),"SYSTEM",fill=W,font=FT)
     
     # Row 1: Main values
     if gm:
         d.text((cols[1]+80,y1),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
-        d.text((cols[1]+220,y1+10),f"{int(mh.get('cpu_temp',ct))}°C",fill=tc(mh.get('cpu_temp',ct)),font=FL)
+        d.text((cols[1]+220,y1+10),f"{int(mh.get('cpu_temp',ct))}°C",fill=W,font=FL)
         d.text((cols[2]+80,y1),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
-        d.text((cols[2]+220,y1+10),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=tc(mh.get('gpu_temp',gpu['temp'])),font=FL)
+        d.text((cols[2]+220,y1+10),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=W,font=FL)
         d.text((cols[3],y1),f"RAM {mh.get('ram_used',ru):.1f}G",fill=W,font=FL)
         vr=mh.get('gpu_vram_used',0)
-        if vr: d.text((cols[3]+210,y1),f"VRAM {vr:.1f}G",fill=(255,140,0),font=FL)
+        if vr: d.text((cols[3]+210,y1),f"VRAM {vr:.1f}G",fill=W,font=FL)
     else:
         d.text((cols[1]+80,y1),f"{cpu_l:.0f}%",fill=W,font=FV)
-        d.text((cols[1]+220,y1+10),f"{ct}°C",fill=tc(ct),font=FL)
+        d.text((cols[1]+220,y1+10),f"{ct}°C",fill=W,font=FL)
         d.text((cols[2]+80,y1),f"{gpu['load']}%",fill=W,font=FV)
-        d.text((cols[2]+210,y1+10),f"{gpu['temp']}°C",fill=tc(gpu['temp']),font=FL)
-        d.text((cols[2]+310,y1+10),f"{gpu['power']}W",fill=G,font=FL)
+        d.text((cols[2]+210,y1+10),f"{gpu['temp']}°C",fill=W,font=FL)
+        d.text((cols[2]+310,y1+10),f"{gpu['power']}W",fill=W,font=FL)
         d.text((cols[3],y1),f"RAM {ru:.1f}/{rt:.0f}G",fill=W,font=FL)
         
     d.text((cols[4],y1),time.strftime("%H:%M:%S"),fill=W,font=FV)
-    d.text((cols[4]+210,y1+15),f"DISK {du_perc:.0f}%",fill=DG,font=FS)
+    d.text((cols[4]+210,y1+15),f"DISK {du_perc:.0f}%",fill=W,font=FS)
     
     # Row 2: Secondary
     if gm:
-        d.text((cols[1]+80,y2),f"{int(mh.get('cpu_power',0))}W",fill=G,font=FL)
+        d.text((cols[1]+80,y2),f"{int(mh.get('cpu_power',0))}W",fill=W,font=FL)
         cclk=mh.get('cpu_mhz',cpu_mhz)
-        if cclk: d.text((cols[1]+200,y2),f"{int(cclk)}MHz",fill=DG,font=FS)
+        if cclk: d.text((cols[1]+200,y2),f"{int(cclk)}MHz",fill=W,font=FS)
         
-        d.text((cols[2]+80,y2),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=G,font=FL)
+        d.text((cols[2]+80,y2),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=W,font=FL)
         gclk=mh.get('gpu_core_clock',0)
-        if gclk: d.text((cols[2]+200,y2),f"{int(gclk)}MHz",fill=DG,font=FS)
+        if gclk: d.text((cols[2]+200,y2),f"{int(gclk)}MHz",fill=W,font=FS)
     else:
-        if cpu_mhz: d.text((cols[1]+80,y2),f"{cpu_mhz}MHz",fill=DG,font=FS)
-        d.text((cols[2]+80,y2),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=DG,font=FS)
+        if cpu_mhz: d.text((cols[1]+80,y2),f"{cpu_mhz}MHz",fill=W,font=FS)
+        d.text((cols[2]+80,y2),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=W,font=FS)
         
-    d.text((cols[3],y2),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=DG,font=FS)
+    d.text((cols[3],y2),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=W,font=FS)
     
 
     return img.rotate(90, expand=True)
