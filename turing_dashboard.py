@@ -110,10 +110,23 @@ def build():
     img=Image.new('RGB',(1920,480),GREEN); d=ImageDraw.Draw(img)
     gpu=read_gpu(); ct=read_ct(); ru,rt=read_ram(); mh=read_mh()
     rx,tx=read_net(); now=time.time()
+    
     if prev_net[2]>0:
         dt=max(now-prev_net[2],0.1); dl=(rx-prev_net[0])/dt/1024; ul=(tx-prev_net[1])/dt/1024
     else: dl=ul=0
     prev_net=[rx,tx,now]; gm=mh is not None
+    
+    import shutil
+    try:
+        t, u, f = shutil.disk_usage("/")
+        du_perc = u / t * 100
+    except: du_perc = 0
+    
+    try:
+        import psutil
+        cpu_l = psutil.cpu_percent()
+        cpu_mhz = int(psutil.cpu_freq().current)
+    except: cpu_l, cpu_mhz = 0, 0
     
     # Landscape layout: columns across 1920px, rows in 480px
     cols=[30,400,780,1200,1550]; y0=15; y1=45; y2=75
@@ -133,29 +146,37 @@ def build():
     
     # Row 1: Main values
     if gm:
-        d.text((cols[1]+50,y1),f"{mh.get('cpu_load',0):.0f}%",fill=W,font=FV)
+        d.text((cols[1]+50,y1),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
         d.text((cols[1]+150,y1+5),f"{int(mh.get('cpu_temp',ct))}°C",fill=tc(mh.get('cpu_temp',ct)),font=FL)
-        d.text((cols[2]+50,y1),f"{mh.get('gpu_load',0):.0f}%",fill=W,font=FV)
+        d.text((cols[2]+50,y1),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
         d.text((cols[2]+150,y1+5),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=tc(mh.get('gpu_temp',gpu['temp'])),font=FL)
         d.text((cols[3],y1),f"RAM {mh.get('ram_used',ru):.1f}G",fill=W,font=FL)
         vr=mh.get('gpu_vram_used',0)
         if vr: d.text((cols[3]+150,y1),f"VRAM {vr:.1f}G",fill=(255,140,0),font=FL)
     else:
-        d.text((cols[1]+50,y1),f"{ct}°C",fill=tc(ct),font=FV)
+        d.text((cols[1]+50,y1),f"{cpu_l:.0f}%",fill=W,font=FV)
+        d.text((cols[1]+150,y1+5),f"{ct}°C",fill=tc(ct),font=FL)
         d.text((cols[2]+50,y1),f"{gpu['load']}%",fill=W,font=FV)
         d.text((cols[2]+140,y1+5),f"{gpu['temp']}°C",fill=tc(gpu['temp']),font=FL)
         d.text((cols[2]+220,y1+5),f"{gpu['power']}W",fill=G,font=FL)
         d.text((cols[3],y1),f"RAM {ru:.1f}/{rt:.0f}G",fill=W,font=FL)
+        
     d.text((cols[4],y1),time.strftime("%H:%M:%S"),fill=W,font=FV)
+    d.text((cols[4]+140,y1+10),f"DISK {du_perc:.0f}%",fill=DG,font=FS)
     
     # Row 2: Secondary
     if gm:
         d.text((cols[1]+50,y2),f"{int(mh.get('cpu_power',0))}W",fill=G,font=FL)
+        cclk=mh.get('cpu_mhz',cpu_mhz)
+        if cclk: d.text((cols[1]+120,y2),f"{int(cclk)}MHz",fill=DG,font=FS)
+        
         d.text((cols[2]+50,y2),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=G,font=FL)
         gclk=mh.get('gpu_core_clock',0)
-        if gclk: d.text((cols[2]+120,y2),f"{gclk}MHz",fill=DG,font=FS)
+        if gclk: d.text((cols[2]+120,y2),f"{int(gclk)}MHz",fill=DG,font=FS)
     else:
+        if cpu_mhz: d.text((cols[1]+50,y2),f"{cpu_mhz}MHz",fill=DG,font=FS)
         d.text((cols[2]+50,y2),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=DG,font=FS)
+        
     d.text((cols[3],y2),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=DG,font=FS)
     
     # Rendición absoluta. Regresamos a rotate(270).
