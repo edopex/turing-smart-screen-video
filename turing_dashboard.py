@@ -242,19 +242,25 @@ def build():
             d.text((x, y), str(val_str), fill=W, font=font)
     
     # Row 0: Titles
+    fps_title_txt = ly.get("fps_title", {}).get("text", "FPS")
+    cpu_title_txt = ly.get("cpu_title", {}).get("text", "CPU")
+    gpu_title_txt = ly.get("gpu_title", {}).get("text", "GPU")
+    mem_title_txt = ly.get("mem_title", {}).get("text", "MEMORY")
+    sys_title_txt = ly.get("sys_title", {}).get("text", "SYSTEM")
+
     if gm:
         fps=int(mh.get("fps",0))
-        draw_text("fps_title", "FPS")
+        draw_text("fps_title", fps_title_txt)
         draw_text("fps_val", f"{fps}")
         draw_text("fps_ms", f"{mh.get('frametime',0):.1f}ms")
     else:
-        draw_text("fps_title", "FPS")
+        draw_text("fps_title", fps_title_txt)
         draw_text("fps_val", "180")
         draw_text("fps_ms", "5.5ms")
-    draw_text("cpu_title", "CPU")
-    draw_text("gpu_title", "GPU")
-    draw_text("mem_title", "MEMORY")
-    draw_text("sys_title", "SYSTEM")
+    draw_text("cpu_title", cpu_title_txt)
+    draw_text("gpu_title", gpu_title_txt)
+    draw_text("mem_title", mem_title_txt)
+    draw_text("sys_title", sys_title_txt)
     
     # Row 1: Main values
     if gm:

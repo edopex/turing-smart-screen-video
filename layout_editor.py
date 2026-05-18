@@ -39,7 +39,7 @@ class LayoutEditor:
         self.root = root
         self.root.title("Turing Smart Screen 8.8\" Layout & Properties Editor")
         self.root.configure(bg="#0f0f13")
-        self.root.geometry(f"{WIDTH + 340}x{HEIGHT + 140}")
+        self.root.geometry(f"{WIDTH + 340}x{HEIGHT + 240}")
         self.root.resizable(False, False)
 
         # Selected Key State
@@ -90,6 +90,17 @@ class LayoutEditor:
         self.sel_title_lbl = tk.Label(right_frame, text="Selected: None", fg="#ffffff", 
                                       bg="#161622", font=("Helvetica", 11, "bold"))
         self.sel_title_lbl.pack(pady=8)
+
+        # Custom Label Text Frame (Only shown for static _title keys)
+        self.text_frame = tk.Frame(right_frame, bg="#161622")
+        tk.Label(self.text_frame, text="Custom Label Text:", fg="#a0a0aa", bg="#161622", font=("Helvetica", 9)).pack(anchor=tk.W, pady=2)
+        self.text_var = tk.StringVar()
+        self.text_entry = tk.Entry(self.text_frame, textvariable=self.text_var, bg="#1e1e24", fg="#ffffff", 
+                                   insertbackground="#ffffff", bd=0, highlightthickness=1, highlightbackground="#252538", 
+                                   highlightcolor="#00b4ff", font=("Helvetica", 10, "bold"))
+        self.text_entry.pack(fill=tk.X, pady=4)
+        self.text_var.trace_add("write", lambda *args: self.update_selected_text())
+        self.updating_sidebar = False
 
         # Visibility Toggle
         self.vis_var = tk.BooleanVar(value=True)
@@ -221,13 +232,28 @@ class LayoutEditor:
                     print(f"Error loading background image: {e}")
 
         display_texts = {
-            "fps_title": "[FPS Title]", "fps_val": "180", "fps_ms": "5.5ms",
-            "cpu_title": "[CPU Title]", "cpu_val": "45%", "cpu_temp": "55°C",
-            "cpu_power": "42W", "cpu_mhz": "4200MHz",
-            "gpu_title": "[GPU Title]", "gpu_val": "78%", "gpu_temp": "62°C",
-            "gpu_power": "180W", "gpu_mhz": "1950MHz", "gpu_volt_fan": "1.05V 2100RPM", "gpu_power_desc": "120W",
-            "mem_title": "[MEMORY Title]", "ram_used": "7.5G/16.0G", "vram_used": "VRAM 4.2G", "net_stat": "NET ↓240 ↑45 KB/s",
-            "sys_title": "[SYSTEM Title]", "sys_time": "12:34:56", "sys_disk": "DISK 35%"
+            "fps_title": self.layout.get("fps_title", {}).get("text", "FPS"), 
+            "fps_val": "180", 
+            "fps_ms": "5.5ms",
+            "cpu_title": self.layout.get("cpu_title", {}).get("text", "CPU"), 
+            "cpu_val": "45%", 
+            "cpu_temp": "55°C",
+            "cpu_power": "42W", 
+            "cpu_mhz": "4200MHz",
+            "gpu_title": self.layout.get("gpu_title", {}).get("text", "GPU"), 
+            "gpu_val": "78%", 
+            "gpu_temp": "62°C",
+            "gpu_power": "180W", 
+            "gpu_mhz": "1950MHz", 
+            "gpu_volt_fan": "1.05V 2100RPM", 
+            "gpu_power_desc": "120W",
+            "mem_title": self.layout.get("mem_title", {}).get("text", "MEMORY"), 
+            "ram_used": "7.5G/16.0G", 
+            "vram_used": "VRAM 4.2G", 
+            "net_stat": "NET ↓240 ↑45 KB/s",
+            "sys_title": self.layout.get("sys_title", {}).get("text", "SYSTEM"), 
+            "sys_time": "12:34:56", 
+            "sys_disk": "DISK 35%"
         }
         
         colors = {
@@ -345,6 +371,7 @@ class LayoutEditor:
         self.draw_elements()
 
     def update_sidebar(self):
+        self.updating_sidebar = True
         if self.selected_key:
             prop = self.layout[self.selected_key]
             self.sel_title_lbl.configure(text=f"Selected: {self.selected_key}", fg="#00b4ff")
@@ -357,12 +384,19 @@ class LayoutEditor:
             self.size_scale.configure(state=tk.NORMAL)
             self.bold_chk.configure(state=tk.NORMAL)
             self.font_menu.configure(state=tk.NORMAL)
+            
+            if self.selected_key.endswith("_title"):
+                self.text_frame.pack(fill=tk.X, pady=8)
+                self.text_var.set(prop.get("text", self.get_default_title(self.selected_key)))
+            else:
+                self.text_frame.pack_forget()
         else:
             self.sel_title_lbl.configure(text="Selected: None", fg="#a0a0aa")
             self.vis_chk.configure(state=tk.DISABLED)
             self.size_scale.configure(state=tk.DISABLED)
             self.bold_chk.configure(state=tk.DISABLED)
             self.font_menu.configure(state=tk.DISABLED)
+            self.text_frame.pack_forget()
 
         # Update background settings fields from layout global config
         cfg = self.layout.get("config", {"mode": "video", "image_path": ""})
@@ -372,6 +406,25 @@ class LayoutEditor:
             self.img_path_lbl.configure(text=os.path.basename(img_path))
         else:
             self.img_path_lbl.configure(text="No image selected")
+        self.updating_sidebar = False
+
+    def update_selected_text(self):
+        if getattr(self, "updating_sidebar", False):
+            return
+        if self.selected_key and self.selected_key.endswith("_title"):
+            self.layout[self.selected_key]["text"] = self.text_var.get()
+            self.save_layout()
+            self.draw_elements()
+
+    def get_default_title(self, key):
+        defaults = {
+            "fps_title": "FPS",
+            "cpu_title": "CPU",
+            "gpu_title": "GPU",
+            "mem_title": "MEMORY",
+            "sys_title": "SYSTEM"
+        }
+        return defaults.get(key, "")
 
     def update_selected_property(self):
         if self.selected_key:
