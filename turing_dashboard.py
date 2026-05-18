@@ -12,7 +12,7 @@ VIDEO_PATH = "/mnt/UDISK/video/DeskDisplay2.mp4.mp4"
 from library.lcd.lcd_comm_rev_c import LcdCommRevC
 def get_com_port():
     from serial.tools.list_ports import comports
-    # 1. First priority: exact g_serial USB gadget port (0x0525/0xa4a7) which is ACM1
+    # 1. First priority: exact g_serial USB gadget d port (0x0525/0xa4a7) which is ACM1
     for p in comports():
         if p.vid == 0x0525 and p.pid == 0xa4a7:
             try:
