@@ -99,7 +99,7 @@ def read_net():
 
 W=(255,255,255); G=(160,160,160); DG=(100,100,100); CT=(0,180,255)
 def tc(t): return (100,200,255) if t<60 else (255,200,0) if t<80 else (255,80,80)
-def fc(f): return (0,255,100) if f>=60 else (255,255,0) if f>=30 else (255,80,80)
+def fc(f): return (100,255,100) if f>=60 else (255,255,0) if f>=30 else (255,80,80)
 
 # Se eliminó la versión "optimizada" de image_to_BGRA.
 # La versión lenta de arriba actúa como un delay natural necesario.
@@ -139,7 +139,7 @@ def build():
         d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=G,font=FL)
     else:
         d.text((cols[0],y0),"FPS",fill=CT,font=FT)
-        d.text((cols[0]+90,y0),"180",fill=fc(180),font=FV)
+        d.text((cols[0]+90,y0),"180",fill=G,font=FV)
         d.text((cols[0]+230,y0+10),"5.5ms",fill=G,font=FL)
     d.text((cols[1],y0),"CPU",fill=CT,font=FT)
     d.text((cols[2],y0),"GPU",fill=CT,font=FT)
