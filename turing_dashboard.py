@@ -129,7 +129,7 @@ def build():
     except: cpu_l, cpu_mhz = 0, 0
     
     # Landscape layout: columns across 1920px, rows in 480px
-    cols=[40, 440, 840, 1260, 1600]; y0=25; y1=85; y2=150
+    cols=[80, 480, 880, 1280, 1620]; y0=60; y1=130; y2=200
     
     # Row 0: Titles
     if gm:
