@@ -138,7 +138,9 @@ def build():
         d.text((cols[0]+90,y0-15),f"{fps}",fill=fc(fps),font=FV)
         d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=G,font=FL)
     else:
-        d.text((cols[0],y0),"DESKTOP",fill=CT,font=FT)
+        d.text((cols[0],y0),"FPS",fill=CT,font=FT)
+        d.text((cols[0]+90,y0-15),"180",fill=fc(180),font=FV)
+        d.text((cols[0]+230,y0+10),"5.5ms",fill=G,font=FL)
     d.text((cols[1],y0),"CPU",fill=CT,font=FT)
     d.text((cols[2],y0),"GPU",fill=CT,font=FT)
     d.text((cols[3],y0),"MEMORY",fill=CT,font=FT)
