@@ -9,6 +9,7 @@ import time
 
 DASHBOARD_PATH = "/home/edopex/Documents/TURZX/turing-smart-screen-python/turing_dashboard.py"
 BRIDGE_PATH = "/home/edopex/Documents/TURZX/turing-smart-screen-python/fps_bridge.py"
+LAYOUT_EDITOR_PATH = "/home/edopex/Documents/TURZX/turing-smart-screen-python/layout_editor.py"
 
 def find_process(script_path):
     for proc in psutil.process_iter(['pid', 'cmdline']):
@@ -43,6 +44,12 @@ class ControlCenter:
         self.dash_status_lbl = tk.Label(self.dash_frame, text="STOPPED", fg="#ff4f4f", bg="#161622", 
                                         font=("Helvetica", 11, "bold"))
         self.dash_status_lbl.pack(side=tk.LEFT, padx=10)
+
+        self.dash_edit_btn = tk.Button(self.dash_frame, text="Edit Layout", command=self.open_layout_editor, 
+                                       fg="#00b4ff", bg="#252538", activeforeground="#00b4ff", 
+                                       activebackground="#2b2b46", bd=0, padx=12, pady=4, 
+                                       font=("Helvetica", 9, "bold"))
+        self.dash_edit_btn.pack(side=tk.RIGHT, padx=5)
 
         self.dash_start_btn = tk.Button(self.dash_frame, text="Start", command=self.start_dashboard, 
                                         fg="#00ff66", bg="#252538", activeforeground="#00ff66", 
@@ -151,6 +158,18 @@ class ControlCenter:
                     pass
             time.sleep(0.5)
             self.update_statuses()
+
+    def open_layout_editor(self):
+        try:
+            subprocess.Popen(
+                ["python3", LAYOUT_EDITOR_PATH],
+                cwd=os.path.dirname(LAYOUT_EDITOR_PATH),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                preexec_fn=os.setsid
+            )
+        except Exception as e:
+            messagebox.showerror("Error starting Layout Editor", str(e))
 
     def start_bridge(self):
         if not find_process(BRIDGE_PATH):
