@@ -91,6 +91,15 @@ class LayoutEditor:
                              padx=15, pady=5, font=("Helvetica", 10, "bold"))
         save_btn.pack(side=tk.LEFT, padx=10)
 
+        close_btn = tk.Button(ctrl_frame, text="Close Editor (X)", command=self.root.destroy, 
+                              fg="#ffffff", bg="#1e1e24", activeforeground="#ffffff", 
+                              activebackground="#2b2b36", highlightthickness=0, bd=0, 
+                              padx=15, pady=5, font=("Helvetica", 10, "bold"))
+        close_btn.pack(side=tk.LEFT, padx=10)
+
+        # Bind window manager 'X' button close
+        self.root.protocol("WM_DELETE_WINDOW", self.root.destroy)
+
     def load_layout(self):
         try:
             if os.path.exists(LAYOUT_FILE):

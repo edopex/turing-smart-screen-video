@@ -145,9 +145,6 @@ def read_net():
 
 W=(255,255,255)
 
-# Se eliminó la versión "optimizada" de image_to_BGRA.
-# La versión lenta de arriba actúa como un delay natural necesario.
-
 def build():
     global prev_net
     # Draw in LANDSCAPE (1920x480)

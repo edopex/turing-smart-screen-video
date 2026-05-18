@@ -89,7 +89,7 @@ class ControlCenter:
         footer_frame = tk.Frame(root, bg="#0f0f13")
         footer_frame.pack(pady=20)
 
-        bg_btn = tk.Button(footer_frame, text="Close to Background", command=self.close_to_bg, 
+        bg_btn = tk.Button(footer_frame, text="Close to Background (X)", command=self.close_to_bg, 
                             fg="#ffffff", bg="#252538", activeforeground="#ffffff", 
                             activebackground="#2b2b46", bd=0, padx=15, pady=6, 
                             font=("Helvetica", 10, "bold"))
@@ -100,6 +100,9 @@ class ControlCenter:
                              activebackground="#2b2b36", bd=0, padx=15, pady=6, 
                              font=("Helvetica", 10, "bold"))
         quit_btn.pack(side=tk.LEFT, padx=10)
+
+        # Bind window manager 'X' button close to self.close_to_bg
+        self.root.protocol("WM_DELETE_WINDOW", self.close_to_bg)
 
         # Start periodic status updates
         self.update_statuses()
