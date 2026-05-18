@@ -1,196 +1,341 @@
 {
-  "config": {
-    "mode": "image",
-    "image_path": "/home/edopex/Downloads/Omarchy_logo.png",
-    "visible": true,
-    "size": 36,
-    "bold": true,
-    "font": "DejaVuSans",
-    "x": 6,
-    "y": 6
-  },
   "fps_title": {
-    "x": 16,
-    "y": 90,
-    "size": 36,
+    "x": 18,
+    "y": 8,
+    "size": 18,
     "bold": true,
-    "visible": true,
-    "font": "DejaVuSans"
+    "visible": false,
+    "font": "DejaVuSans",
+    "text": "CUadros"
   },
   "fps_val": {
-    "x": 14,
-    "y": 158,
+    "x": 626,
+    "y": 174,
     "size": 36,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "fps_ms": {
-    "x": 10,
-    "y": 222,
-    "size": 36,
+    "x": 644,
+    "y": 212,
+    "size": 14,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "cpu_title": {
-    "x": 422,
-    "y": 72,
-    "size": 36,
+    "x": 240,
+    "y": 8,
+    "size": 18,
     "bold": true,
-    "visible": true,
-    "font": "DejaVuSans"
+    "visible": false,
+    "font": "DejaVuSans",
+    "text": "CPU2"
   },
   "cpu_val": {
-    "x": 436,
-    "y": 148,
-    "size": 36,
+    "x": 166,
+    "y": 20,
+    "size": 28,
     "bold": true,
     "visible": true,
-    "font": "DejaVuSans"
+    "font": "DejaVuSans",
+    "render_type": "graph"
   },
   "cpu_temp": {
-    "x": 428,
-    "y": 228,
-    "size": 36,
+    "x": 214,
+    "y": 176,
+    "size": 24,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "cpu_power": {
-    "x": 434,
-    "y": 312,
-    "size": 36,
+    "x": 464,
+    "y": 106,
+    "size": 26,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "cpu_mhz": {
-    "x": 382,
-    "y": 376,
-    "size": 36,
+    "x": 468,
+    "y": 34,
+    "size": 20,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "gpu_title": {
-    "x": 776,
-    "y": 82,
-    "size": 36,
+    "x": 178,
+    "y": 14,
+    "size": 12,
     "bold": true,
-    "visible": true,
+    "visible": false,
+    "text": "GPU",
     "font": "DejaVuSans"
   },
   "gpu_val": {
-    "x": 804,
-    "y": 152,
-    "size": 36,
+    "x": 1766,
+    "y": 18,
+    "size": 28,
     "bold": true,
     "visible": true,
-    "font": "DejaVuSans"
+    "font": "DejaVuSans",
+    "render_type": "text"
   },
   "gpu_temp": {
-    "x": 926,
-    "y": 108,
-    "size": 36,
+    "x": 1580,
+    "y": 176,
+    "size": 24,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "gpu_power": {
-    "x": 784,
-    "y": 220,
-    "size": 36,
+    "x": 1362,
+    "y": 114,
+    "size": 26,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "gpu_mhz": {
-    "x": 760,
-    "y": 306,
-    "size": 36,
+    "x": 1348,
+    "y": 22,
+    "size": 22,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "gpu_volt_fan": {
-    "x": 750,
-    "y": 394,
+    "x": 700,
+    "y": 298,
     "size": 36,
     "bold": true,
-    "visible": true,
-    "font": "DejaVuSans"
-  },
-  "gpu_power_desc": {
-    "x": 1042,
-    "y": 224,
-    "size": 36,
-    "bold": true,
-    "visible": true,
+    "visible": false,
     "font": "DejaVuSans"
   },
   "mem_title": {
-    "x": 1280,
-    "y": 110,
-    "size": 36,
+    "x": 324,
+    "y": 18,
+    "size": 12,
     "bold": true,
-    "visible": true,
+    "visible": false,
     "font": "DejaVuSans"
   },
   "ram_used": {
-    "x": 1280,
-    "y": 200,
-    "size": 36,
+    "x": 1494,
+    "y": 362,
+    "size": 40,
     "bold": true,
     "visible": true,
-    "font": "DejaVuSans"
+    "font": "DejaVuSans",
+    "text": "",
+    "render_type": "chart"
   },
   "vram_used": {
-    "x": 1252,
-    "y": 50,
-    "size": 36,
+    "x": 1708,
+    "y": 208,
+    "size": 16,
     "bold": true,
     "visible": true,
-    "font": "DejaVuSans"
+    "font": "DejaVuSans",
+    "text": "",
+    "render_type": "graph"
   },
   "net_down": {
-    "x": 1222,
-    "y": 308,
-    "size": 36,
+    "x": 1064,
+    "y": 28,
+    "size": 22,
     "bold": true,
     "visible": true,
-    "font": "DejaVuSans"
+    "font": "DejaVuSans",
+    "text": ""
   },
   "net_up": {
-    "x": 1432,
-    "y": 308,
-    "size": 36,
+    "x": 782,
+    "y": 48,
+    "size": 22,
     "bold": true,
     "visible": true,
-    "font": "DejaVuSans"
+    "font": "DejaVuSans",
+    "text": ""
   },
   "sys_title": {
-    "x": 1664,
-    "y": 22,
-    "size": 36,
+    "x": 424,
+    "y": 18,
+    "size": 12,
     "bold": true,
-    "visible": true,
+    "visible": false,
     "font": "DejaVuSans"
   },
   "sys_time": {
-    "x": 1624,
-    "y": 390,
-    "size": 36,
+    "x": 1176,
+    "y": 414,
+    "size": 44,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
   },
   "sys_disk": {
-    "x": 1624,
-    "y": 194,
-    "size": 36,
+    "x": 386,
+    "y": 297,
+    "size": 12,
+    "bold": true,
+    "visible": false,
+    "font": "DejaVuSans",
+    "text": "",
+    "render_type": "graph"
+  },
+  "sys_disk2": {
+    "x": 388,
+    "y": 346,
+    "size": 20,
+    "bold": true,
+    "visible": false,
+    "font": "DejaVuSans",
+    "text": "",
+    "render_type": "graph"
+  },
+  "sys_disk3": {
+    "x": 388,
+    "y": 398,
+    "size": 22,
+    "bold": true,
+    "visible": false,
+    "font": "DejaVuSans",
+    "text": "",
+    "render_type": "graph"
+  },
+  "config": {
+    "mode": "video",
+    "image_path": "/home/edopex/Downloads/6325184.jpg"
+  },
+  "sys_date": {
+    "x": 538,
+    "y": 404,
+    "size": 44,
     "bold": true,
     "visible": true,
     "font": "DejaVuSans"
+  },
+  "sys_volume": {
+    "x": 1212,
+    "y": 168,
+    "size": 36,
+    "bold": true,
+    "visible": true,
+    "text": "",
+    "font": "DejaVuSans"
+  },
+  "cpu_bar": {
+    "x": 130,
+    "y": 210,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "gpu_bar": {
+    "x": 1594,
+    "y": 210,
+    "size": 24,
+    "bold": true,
+    "visible": false,
+    "font": "DejaVuSans"
+  },
+  "ram_bar": {
+    "x": 1482,
+    "y": 262,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "vram_bar": {
+    "x": 1578,
+    "y": 208,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "sys_disk_bar": {
+    "x": 236,
+    "y": 299,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "sys_disk2_bar": {
+    "x": 238,
+    "y": 356,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "sys_disk3_bar": {
+    "x": 238,
+    "y": 410,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "sys_disk_free": {
+    "x": 376,
+    "y": 296,
+    "size": 24,
+    "bold": false,
+    "visible": true,
+    "font": "DejaVuSans",
+    "text": "Free "
+  },
+  "sys_disk2_free": {
+    "x": 376,
+    "y": 351,
+    "size": 22,
+    "bold": false,
+    "visible": true,
+    "font": "DejaVuSans",
+    "text": "Free "
+  },
+  "sys_disk3_free": {
+    "x": 376,
+    "y": 409,
+    "size": 22,
+    "bold": false,
+    "visible": true,
+    "font": "DejaVuSans",
+    "text": "Free "
+  },
+  "ram_free_bar": {
+    "x": 1482,
+    "y": 308,
+    "size": 24,
+    "bold": true,
+    "visible": true,
+    "font": "DejaVuSans"
+  },
+  "ram_temp": {
+    "x": 1530,
+    "y": 380,
+    "size": 24,
+    "bold": false,
+    "visible": false,
+    "font": "DejaVuSans",
+    "text": ""
+  },
+  "nvme_temp": {
+    "x": 116,
+    "y": 398,
+    "size": 22,
+    "bold": false,
+    "visible": true,
+    "font": "DejaVuSans",
+    "text": ""
   }
 }

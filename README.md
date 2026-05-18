@@ -17,14 +17,24 @@ Mientras la pantalla reproduce video por hardware, el script de Python dibuja en
 ### Centro de Control Grafico (Turing Control Center)
 Una suite visual e intuitiva construida en Tkinter que permite administrar los servicios en segundo plano con un solo clic. Muestra el estado actual del dashboard y del puente MangoHud (RUNNING / STOPPED) de manera limpia, permitiendo iniciar o apagar los servicios de forma silenciosa sin abrir consolas ni terminales de sistema.
 
-### Editor de Diseno Interactiva (Drag & Drop)
-Integrado dentro del Centro de Control, este editor visual muestra un lienzo a escala 50% de la pantalla fisica. Permite arrastrar libremente con el mouse cualquier texto o etiqueta en tiempo real y ver como se desplaza en vivo de forma instantanea en tu pantalla fisica de 8.8". Las coordenadas se guardan automaticamente en un archivo JSON local.
+### Gráficos de Líneas y Picos en Tiempo Real (Cyberpunk Charts)
+¡Di adiós a las aburridas lecturas de texto simple! Ahora puedes alternar el formato de visualización de cualquier métrica de sistema (RAM, CPU, GPU, VRAM, Discos) a **"Chart"** (Gráfico).
+*   **Diseño Premium Neón**: Renderiza en tiempo real un gráfico de área con sombreado de relleno degradado, cuadrículas horizontales sutiles y un ticker neón con un punto de actualización brillante.
+*   **Historial Dinámico de 50 Puntos**: Almacena y desplaza en vivo los últimos 50 registros de actividad alineados a la derecha de manera fluida, tal como un monitor de hardware profesional.
+*   **Identidad Visual por Componente**: Cada componente cuenta con su propio color neón curado:
+    *   *RAM / VRAM*: Cyan/Teal Eléctrico.
+    *   *CPU*: Naranja/Rojo Vibrante.
+    *   *GPU*: Verde Gaming de Alto Rendimiento.
+    *   *Discos*: Púrpura/Magenta Futurista.
 
-### Integracion con MangoHud
-Incluye un puente (fps_bridge.py) disenado para capturar los logs de rendimiento de MangoHud en Linux. Esto permite que tu pantalla Turing muestre los FPS y el tiempo de cuadro exactos dentro de tus juegos en Steam, Lutris o Heroic.
+### Editor de Diseño Interactivo (Drag & Drop)
+Integrado dentro del Centro de Control, este editor visual muestra un lienzo a escala 50% de la pantalla física. Permite arrastrar libremente con el mouse cualquier texto, barra o gráfico de picos en tiempo real y ver cómo se desplaza en vivo de forma instantánea en tu pantalla física de 8.8". Las coordenadas y tipos de renderizado se guardan automáticamente en tu archivo JSON local.
 
-### Inicio Automatico
-Configurado para iniciar ambos servicios en segundo plano de manera 100% silenciosa al iniciar sesion en el sistema operativo, garantizando que tu pantalla empiece a funcionar de inmediato al encender la PC.
+### Integración con MangoHud
+Incluye un puente (fps_bridge.py) diseñado para capturar los logs de rendimiento de MangoHud en Linux. Esto permite que tu pantalla Turing muestre los FPS y el tiempo de cuadro exactos dentro de tus juegos en Steam, Lutris o Heroic.
+
+### Inicio Automático
+Configurado para iniciar ambos servicios en segundo plano de manera 100% silenciosa al iniciar sesión en el sistema operativo, garantizando que tu pantalla empiece a funcionar de inmediato al encender la PC.
 
 ---
 

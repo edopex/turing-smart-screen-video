@@ -7,9 +7,10 @@ import os
 import signal
 import time
 
-DASHBOARD_PATH = "/home/edopex/Documents/TURZX/turing-smart-screen-python/turing_dashboard.py"
-BRIDGE_PATH = "/home/edopex/Documents/TURZX/turing-smart-screen-python/fps_bridge.py"
-LAYOUT_EDITOR_PATH = "/home/edopex/Documents/TURZX/turing-smart-screen-python/layout_editor.py"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DASHBOARD_PATH = os.path.join(BASE_DIR, "turing_dashboard.py")
+BRIDGE_PATH = os.path.join(BASE_DIR, "fps_bridge.py")
+LAYOUT_EDITOR_PATH = os.path.join(BASE_DIR, "layout_editor.py")
 
 def find_process(script_path):
     for proc in psutil.process_iter(['pid', 'cmdline']):
@@ -152,8 +153,7 @@ class ControlCenter:
         proc = find_process(DASHBOARD_PATH)
         if proc:
             try:
-                proc.terminate()
-                proc.wait(timeout=2)
+                os.killpg(proc.pid, signal.SIGKILL)
             except:
                 try:
                     proc.kill()
@@ -193,8 +193,7 @@ class ControlCenter:
         proc = find_process(BRIDGE_PATH)
         if proc:
             try:
-                proc.terminate()
-                proc.wait(timeout=2)
+                os.killpg(proc.pid, signal.SIGKILL)
             except:
                 try:
                     proc.kill()
