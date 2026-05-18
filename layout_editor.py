@@ -238,13 +238,30 @@ class LayoutEditor:
         self.drag_offset_y = event.y - cy
         
         self.update_sidebar()
-        self.draw_elements()
+        
+        # Redraw only selection box without wiping other canvas items
+        self.canvas.delete("selection_box")
+        bbox = self.canvas.bbox(item)
+        if bbox:
+            self.canvas.create_rectangle(
+                bbox[0]-2, bbox[1]-2, bbox[2]+2, bbox[3]+2, 
+                outline="#00b4ff", width=1, tags=("draggable", "selection_box")
+            )
 
     def drag(self, event):
         if self.drag_item:
             new_x = max(0, min(event.x - self.drag_offset_x, WIDTH - 10))
             new_y = max(0, min(event.y - self.drag_offset_y, HEIGHT - 10))
             self.canvas.coords(self.drag_item, new_x, new_y)
+            
+            # Keep selection box aligned during live drag
+            self.canvas.delete("selection_box")
+            bbox = self.canvas.bbox(self.drag_item)
+            if bbox:
+                self.canvas.create_rectangle(
+                    bbox[0]-2, bbox[1]-2, bbox[2]+2, bbox[3]+2, 
+                    outline="#00b4ff", width=1, tags=("draggable", "selection_box")
+                )
 
     def stop_drag(self, event):
         if self.drag_item:
@@ -255,6 +272,7 @@ class LayoutEditor:
             self.layout[self.drag_key]["y"] = orig_y
             self.drag_item = None
             self.save_layout()
+            # Cleanly refresh all elements after release
             self.draw_elements()
 
     def toggle_visibility(self, key):
