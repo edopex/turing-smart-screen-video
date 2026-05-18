@@ -21,7 +21,7 @@ def _f(b,sz):
         try: return ImageFont.truetype(f"/usr/share/fonts/{d}/{'DejaVuSans-Bold' if b else 'DejaVuSans'}.ttf",sz)
         except: pass
     return ImageFont.load_default()
-FT=_f(True,22); FV=_f(True,28); FL=_f(False,16); FS=_f(False,14)
+FT=_f(True,36); FV=_f(True,52); FL=_f(False,28); FS=_f(False,24)
 
 def spad(s,d):
     r=len(d)%250
@@ -129,14 +129,14 @@ def build():
     except: cpu_l, cpu_mhz = 0, 0
     
     # Landscape layout: columns across 1920px, rows in 480px
-    cols=[30,400,780,1200,1550]; y0=15; y1=45; y2=75
+    cols=[40, 440, 840, 1260, 1600]; y0=25; y1=85; y2=150
     
     # Row 0: Titles
     if gm:
         fps=int(mh.get("fps",0))
         d.text((cols[0],y0),"FPS",fill=CT,font=FT)
-        d.text((cols[0]+60,y0-5),f"{fps}",fill=fc(fps),font=FV)
-        d.text((cols[0]+160,y0+5),f"{mh.get('frametime',0):.1f}ms",fill=G,font=FL)
+        d.text((cols[0]+90,y0-15),f"{fps}",fill=fc(fps),font=FV)
+        d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=G,font=FL)
     else:
         d.text((cols[0],y0),"DESKTOP",fill=CT,font=FT)
     d.text((cols[1],y0),"CPU",fill=CT,font=FT)
@@ -146,36 +146,36 @@ def build():
     
     # Row 1: Main values
     if gm:
-        d.text((cols[1]+50,y1),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
-        d.text((cols[1]+150,y1+5),f"{int(mh.get('cpu_temp',ct))}°C",fill=tc(mh.get('cpu_temp',ct)),font=FL)
-        d.text((cols[2]+50,y1),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
-        d.text((cols[2]+150,y1+5),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=tc(mh.get('gpu_temp',gpu['temp'])),font=FL)
+        d.text((cols[1]+80,y1),f"{mh.get('cpu_load',cpu_l):.0f}%",fill=W,font=FV)
+        d.text((cols[1]+220,y1+10),f"{int(mh.get('cpu_temp',ct))}°C",fill=tc(mh.get('cpu_temp',ct)),font=FL)
+        d.text((cols[2]+80,y1),f"{mh.get('gpu_load',gpu['load']):.0f}%",fill=W,font=FV)
+        d.text((cols[2]+220,y1+10),f"{int(mh.get('gpu_temp',gpu['temp']))}°C",fill=tc(mh.get('gpu_temp',gpu['temp'])),font=FL)
         d.text((cols[3],y1),f"RAM {mh.get('ram_used',ru):.1f}G",fill=W,font=FL)
         vr=mh.get('gpu_vram_used',0)
-        if vr: d.text((cols[3]+150,y1),f"VRAM {vr:.1f}G",fill=(255,140,0),font=FL)
+        if vr: d.text((cols[3]+210,y1),f"VRAM {vr:.1f}G",fill=(255,140,0),font=FL)
     else:
-        d.text((cols[1]+50,y1),f"{cpu_l:.0f}%",fill=W,font=FV)
-        d.text((cols[1]+150,y1+5),f"{ct}°C",fill=tc(ct),font=FL)
-        d.text((cols[2]+50,y1),f"{gpu['load']}%",fill=W,font=FV)
-        d.text((cols[2]+140,y1+5),f"{gpu['temp']}°C",fill=tc(gpu['temp']),font=FL)
-        d.text((cols[2]+220,y1+5),f"{gpu['power']}W",fill=G,font=FL)
+        d.text((cols[1]+80,y1),f"{cpu_l:.0f}%",fill=W,font=FV)
+        d.text((cols[1]+220,y1+10),f"{ct}°C",fill=tc(ct),font=FL)
+        d.text((cols[2]+80,y1),f"{gpu['load']}%",fill=W,font=FV)
+        d.text((cols[2]+210,y1+10),f"{gpu['temp']}°C",fill=tc(gpu['temp']),font=FL)
+        d.text((cols[2]+310,y1+10),f"{gpu['power']}W",fill=G,font=FL)
         d.text((cols[3],y1),f"RAM {ru:.1f}/{rt:.0f}G",fill=W,font=FL)
         
     d.text((cols[4],y1),time.strftime("%H:%M:%S"),fill=W,font=FV)
-    d.text((cols[4]+140,y1+10),f"DISK {du_perc:.0f}%",fill=DG,font=FS)
+    d.text((cols[4]+210,y1+15),f"DISK {du_perc:.0f}%",fill=DG,font=FS)
     
     # Row 2: Secondary
     if gm:
-        d.text((cols[1]+50,y2),f"{int(mh.get('cpu_power',0))}W",fill=G,font=FL)
+        d.text((cols[1]+80,y2),f"{int(mh.get('cpu_power',0))}W",fill=G,font=FL)
         cclk=mh.get('cpu_mhz',cpu_mhz)
-        if cclk: d.text((cols[1]+120,y2),f"{int(cclk)}MHz",fill=DG,font=FS)
+        if cclk: d.text((cols[1]+200,y2),f"{int(cclk)}MHz",fill=DG,font=FS)
         
-        d.text((cols[2]+50,y2),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=G,font=FL)
+        d.text((cols[2]+80,y2),f"{int(mh.get('gpu_power',gpu['power']))}W",fill=G,font=FL)
         gclk=mh.get('gpu_core_clock',0)
-        if gclk: d.text((cols[2]+120,y2),f"{int(gclk)}MHz",fill=DG,font=FS)
+        if gclk: d.text((cols[2]+200,y2),f"{int(gclk)}MHz",fill=DG,font=FS)
     else:
-        if cpu_mhz: d.text((cols[1]+50,y2),f"{cpu_mhz}MHz",fill=DG,font=FS)
-        d.text((cols[2]+50,y2),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=DG,font=FS)
+        if cpu_mhz: d.text((cols[1]+80,y2),f"{cpu_mhz}MHz",fill=DG,font=FS)
+        d.text((cols[2]+80,y2),f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM",fill=DG,font=FS)
         
     d.text((cols[3],y2),f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s",fill=DG,font=FS)
     
