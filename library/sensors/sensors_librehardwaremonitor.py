@@ -277,16 +277,18 @@ class Gpu(sensors.Gpu):
 
     @classmethod
     def stats(cls) -> Tuple[
-        float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C)
+        float, float, float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C) / power (W) / voltage (V)
         gpu_to_use = cls.get_gpu_to_use()
         if gpu_to_use is None:
             # GPU not supported
-            return math.nan, math.nan, math.nan, math.nan, math.nan
+            return math.nan, math.nan, math.nan, math.nan, math.nan, math.nan, math.nan
 
         load = math.nan
         used_mem = math.nan
         total_mem = math.nan
         temp = math.nan
+        power = math.nan
+        voltage = math.nan
 
         for sensor in gpu_to_use.Sensors:
             if sensor.SensorType == Hardware.SensorType.Load and str(sensor.Name).startswith(
@@ -312,8 +314,14 @@ class Gpu(sensors.Gpu):
             elif sensor.SensorType == Hardware.SensorType.Temperature and str(sensor.Name).startswith(
                     "GPU Core") and sensor.Value is not None:
                 temp = float(sensor.Value)
+            elif sensor.SensorType == Hardware.SensorType.Power and str(sensor.Name).startswith(
+                    "GPU Core") and sensor.Value is not None:
+                power = float(sensor.Value)
+            elif sensor.SensorType == Hardware.SensorType.Voltage and str(sensor.Name).startswith(
+                    "GPU Core") and sensor.Value is not None:
+                voltage = float(sensor.Value)
 
-        return load, (used_mem / total_mem * 100.0), used_mem, total_mem, temp
+        return load, (used_mem / total_mem * 100.0), used_mem, total_mem, temp, power, voltage
 
     @classmethod
     def fps(cls) -> int:

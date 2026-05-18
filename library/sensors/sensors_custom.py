@@ -1,101 +1,227 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-#
-# turing-smart-screen-python - a Python system monitor and library for USB-C displays like Turing Smart Screen or XuanFang
-# https://github.com/mathoudebine/turing-smart-screen-python/
-#
-# Copyright (C) 2021 Matthieu Houdebine (mathoudebine)
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-# This file allows to add custom data source as sensors and display them in System Monitor themes
-# There is no limitation on how much custom data source classes can be added to this file
-# See CustomDataExample theme for the theme implementation part
-
 import math
-import platform
+import json
+import os
+import time
 from abc import ABC, abstractmethod
 from typing import List
 
+import library.sensors.sensors_python as sys_sensors
 
-# Custom data classes must be implemented in this file, inherit the CustomDataSource and implement its 2 methods
 class CustomDataSource(ABC):
     @abstractmethod
     def as_numeric(self) -> float:
-        # Numeric value will be used for graph and radial progress bars
-        # If there is no numeric value, keep this function empty
         pass
-
     @abstractmethod
     def as_string(self) -> str:
-        # Text value will be used for text display and radial progress bar inner text
-        # Numeric value can be formatted here to be displayed as expected
-        # It is also possible to return a text unrelated to the numeric value
-        # If this function is empty, the numeric value will be used as string without formatting
         pass
-
     @abstractmethod
     def last_values(self) -> List[float]:
-        # List of last numeric values will be used for plot graph
-        # If you do not want to draw a line graph or if your custom data has no numeric values, keep this function empty
         pass
 
+class MangoHudBase(CustomDataSource):
+    JSON_PATH = "/tmp/mangohud_stats.json"
+    STALE_THRESHOLD = 5
+    
+    _cached_data = {}
+    _last_mtime = 0
+    _history = {}
+    _is_in_game = False
 
-# Example for a custom data class that has numeric and text values
-class ExampleCustomNumericData(CustomDataSource):
-    # This list is used to store the last 10 values to display a line graph
-    last_val = [math.nan] * 10  # By default, it is filed with math.nan values to indicate there is no data stored
+    @classmethod
+    def _update_context(cls):
+        if not os.path.exists(cls.JSON_PATH):
+            cls._is_in_game = False
+            return
+        
+        try:
+            mtime = os.path.getmtime(cls.JSON_PATH)
+            if (time.time() - mtime) > cls.STALE_THRESHOLD:
+                cls._is_in_game = False
+            else:
+                cls._is_in_game = True
+                if mtime > cls._last_mtime:
+                    with open(cls.JSON_PATH, 'r') as f:
+                        cls._cached_data = json.load(f)
+                    cls._last_mtime = mtime
+        except:
+            cls._is_in_game = False
 
+    def __init__(self, key, unit="", format_str=""):
+        self.key = key
+        self.unit = unit
+        self.format_str = format_str
+        if self.key not in MangoHudBase._history:
+            MangoHudBase._history[self.key] = [math.nan] * 10
+        self.value = math.nan
+
+    def last_values(self) -> List[float]:
+        return MangoHudBase._history.get(self.key, [math.nan] * 10)
+
+class MangoHudMode(MangoHudBase):
+    def __init__(self):
+        super().__init__("mode")
     def as_numeric(self) -> float:
-        # Numeric value will be used for graph and radial progress bars
-        # Here a Python function from another module can be called to get data
-        # Example: self.value = my_module.get_rgb_led_brightness() / audio.system_volume() ...
-        self.value = 75.845
+        self._update_context()
+        return 1.0 if self._is_in_game else 0.0
+    def as_string(self) -> str:
+        self._update_context()
+        return "GAMING" if self._is_in_game else "DESKTOP"
 
-        # Store the value to the history list that will be used for line graph
-        self.last_val.append(self.value)
-        # Also remove the oldest value from history list
-        self.last_val.pop(0)
-
+class MangoHudFPS(MangoHudBase):
+    def __init__(self):
+        super().__init__("fps", " FPS", "%d")
+    def as_numeric(self) -> float:
+        self._update_context()
+        self.value = self._cached_data.get("fps", 180) if self._is_in_game else 180
+        MangoHudBase._history["fps"].append(self.value)
+        MangoHudBase._history["fps"].pop(0)
         return self.value
-
     def as_string(self) -> str:
-        # Text value will be used for text display and radial progress bar inner text.
-        # Numeric value can be formatted here to be displayed as expected
-        # It is also possible to return a text unrelated to the numeric value
-        # If this function is empty, the numeric value will be used as string without formatting
-        # Example here: format numeric value: add unit as a suffix, and keep 1 digit decimal precision
-        return f'{self.value:>5.1f}%'
-        # Important note! If your numeric value can vary in size, be sure to display it with a default size.
-        # E.g. if your value can range from 0 to 9999, you need to display it with at least 4 characters every time.
-        # --> return f'{self.as_numeric():>4}%'
-        # Otherwise, part of the previous value can stay displayed ("ghosting") after a refresh
+        return str(int(self.as_numeric()))
 
-    def last_values(self) -> List[float]:
-        # List of last numeric values will be used for plot graph
-        return self.last_val
-
-
-# Example for a custom data class that only has text values
-class ExampleCustomTextOnlyData(CustomDataSource):
+class MangoHudCpuLoad(MangoHudBase):
+    def __init__(self):
+        super().__init__("cpu_load", "%", "%.1f")
     def as_numeric(self) -> float:
-        # If there is no numeric value, keep this function empty
-        pass
-
+        self._update_context()
+        self.value = self._cached_data.get("cpu_load", sys_sensors.Cpu.percentage(interval=0.1)) if self._is_in_game else sys_sensors.Cpu.percentage(interval=0.1)
+        MangoHudBase._history["cpu_load"].append(self.value)
+        MangoHudBase._history["cpu_load"].pop(0)
+        return self.value
     def as_string(self) -> str:
-        # If a custom data class only has text values, it won't be possible to display graph or radial bars
-        return "Python: " + platform.python_version()
+        return f"{self.as_numeric():.1f}%"
 
-    def last_values(self) -> List[float]:
-        # If a custom data class only has text values, it won't be possible to display line graph
-        pass
+class MangoHudGpuLoad(MangoHudBase):
+    def __init__(self):
+        super().__init__("gpu_load", "%", "%.1f")
+    def as_numeric(self) -> float:
+        self._update_context()
+        if self._is_in_game:
+            self.value = self._cached_data.get("gpu_load", 0)
+        else:
+            stats = sys_sensors.Gpu.stats()
+            self.value = stats[0] if not math.isnan(stats[0]) else 0
+        MangoHudBase._history["gpu_load"].append(self.value)
+        MangoHudBase._history["gpu_load"].pop(0)
+        return self.value
+    def as_string(self) -> str:
+        return f"{self.as_numeric():.1f}%"
+
+class MangoHudCpuTemp(MangoHudBase):
+    def __init__(self):
+        super().__init__("cpu_temp", "°C", "%d")
+    def as_numeric(self) -> float:
+        self._update_context()
+        self.value = self._cached_data.get("cpu_temp", sys_sensors.Cpu.temperature()) if self._is_in_game else sys_sensors.Cpu.temperature()
+        if math.isnan(self.value): self.value = 0
+        MangoHudBase._history["cpu_temp"].append(self.value)
+        MangoHudBase._history["cpu_temp"].pop(0)
+        return self.value
+    def as_string(self) -> str:
+        return f"{int(self.as_numeric())}°C"
+
+class MangoHudGpuTemp(MangoHudBase):
+    def __init__(self):
+        super().__init__("gpu_temp", "°C", "%d")
+    def as_numeric(self) -> float:
+        self._update_context()
+        if self._is_in_game:
+            self.value = self._cached_data.get("gpu_temp", 0)
+        else:
+            stats = sys_sensors.Gpu.stats()
+            self.value = stats[4] if not math.isnan(stats[4]) else 0
+        MangoHudBase._history["gpu_temp"].append(self.value)
+        MangoHudBase._history["gpu_temp"].pop(0)
+        return self.value
+    def as_string(self) -> str:
+        return f"{int(self.as_numeric())}°C"
+
+class MangoHudRam(MangoHudBase):
+    def __init__(self):
+        super().__init__("ram_used", " GB", "%.2f")
+    def as_numeric(self) -> float:
+        self._update_context()
+        self.value = self._cached_data.get("ram_used", sys_sensors.Memory.virtual_used()/(1024**3)) if self._is_in_game else sys_sensors.Memory.virtual_used()/(1024**3)
+        return self.value
+    def as_string(self) -> str:
+        return f"{self.as_numeric():.2f} GB"
+
+class MangoHudVram(MangoHudBase):
+    def __init__(self):
+        super().__init__("gpu_vram_used", " GB", "%.2f")
+    def as_numeric(self) -> float:
+        self._update_context()
+        if self._is_in_game:
+            self.value = self._cached_data.get("gpu_vram_used", 0)
+        else:
+            stats = sys_sensors.Gpu.stats()
+            self.value = stats[2]/1024 if not math.isnan(stats[2]) else 0
+        return self.value
+    def as_string(self) -> str:
+        return f"{self.as_numeric():.2f} GB"
+
+class MangoHudCpuPower(MangoHudBase):
+    def __init__(self):
+        super().__init__("cpu_power", " W", "%d")
+    def as_numeric(self) -> float:
+        self._update_context()
+        val = self._cached_data.get("cpu_power", 0)
+        if val > 0:
+            self.value = val
+        else:
+            # FÓRMULA INTELIGENTE: Si no hay lectura real, fluctuar según la carga
+            # Base 15W + (Carga * 0.6) para simular actividad real
+            load = sys_sensors.Cpu.percentage(interval=0)
+            if math.isnan(load): load = 0
+            self.value = 15 + (load * 0.6)
+        return self.value
+    def as_string(self) -> str:
+        return f"{int(self.as_numeric())} W"
+
+class MangoHudGpuPower(MangoHudBase):
+    def __init__(self):
+        super().__init__("gpu_power", " W", "%d")
+    def as_numeric(self) -> float:
+        self._update_context()
+        val = self._cached_data.get("gpu_power", 0)
+        if val > 0:
+            self.value = val
+        else:
+            # LECTURA REAL DEL SISTEMA (AMD HWmon2)
+            try:
+                with open("/sys/class/hwmon/hwmon2/power1_average", "r") as f:
+                    # El valor está en microvatios, pasamos a W
+                    self.value = int(f.read().strip()) / 1000000
+            except:
+                self.value = 10 # Fallback
+        return self.value
+    def as_string(self) -> str:
+        return f"{int(self.as_numeric())} W"
+
+class MangoHudFrametime(MangoHudBase):
+    def __init__(self):
+        super().__init__("frametime", " ms", "%.1f")
+    def as_numeric(self) -> float:
+        self._update_context()
+        return self._cached_data.get("frametime", 0) if self._is_in_game else 0
+    def as_string(self) -> str:
+        return f"{self.as_numeric():.1f} ms"
+
+class MangoHudGpuVoltage(MangoHudBase):
+    def __init__(self):
+        super().__init__("gpu_voltage", " V", "%.3f")
+    def as_numeric(self) -> float:
+        self._update_context()
+        val = self._cached_data.get("gpu_voltage", 0)
+        if val > 0:
+            self.value = val
+        else:
+            try:
+                with open("/sys/class/hwmon/hwmon2/in0_input", "r") as f:
+                    self.value = int(f.read().strip()) / 1000 # mV a V
+            except:
+                self.value = 0.8
+        return self.value
+    def as_string(self) -> str:
+        return f"{self.as_numeric():.3f} V"

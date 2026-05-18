@@ -1,0 +1,14 @@
+---
+author: "Extracted"
+
+display:
+  DISPLAY_SIZE: 8.8"
+  DISPLAY_ORIENTATION: landscape
+
+static_images:
+  BACKGROUND:
+    PATH:  2003.png
+    X: 0
+    Y: 0
+    WIDTH: 1920
+    HEIGHT: 480

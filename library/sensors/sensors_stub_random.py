@@ -52,9 +52,9 @@ class Cpu(sensors.Cpu):
 class Gpu(sensors.Gpu):
     @staticmethod
     def stats() -> Tuple[
-        float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C)
+        float, float, float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C) / power (W) / voltage (V)
         return random.uniform(0, 100), random.uniform(0, 100), random.uniform(300, 16000), 16000.0, random.uniform(30,
-                                                                                                                   90)
+                                                                                                                   90), random.uniform(50, 350), random.uniform(0.8, 1.3)
 
     @staticmethod
     def fps() -> int:

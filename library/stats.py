@@ -381,10 +381,12 @@ class Gpu:
     last_values_gpu_fps = []
     last_values_gpu_fan_speed = []
     last_values_gpu_frequency = []
+    last_values_gpu_power = []
+    last_values_gpu_voltage = []
 
     @classmethod
     def stats(cls):
-        load, memory_percentage, memory_used_mb, total_memory_mb, temperature = sensors.Gpu.stats()
+        load, memory_percentage, memory_used_mb, total_memory_mb, temperature, power, voltage = sensors.Gpu.stats()
         fps = sensors.Gpu.fps()
         fan_percent = sensors.Gpu.fan_percent()
         freq_ghz = sensors.Gpu.frequency() / 1000
@@ -403,6 +405,10 @@ class Gpu:
                         theme_gpu_data['FAN_SPEED']['LINE_GRAPH'].get("HISTORY_SIZE", DEFAULT_HISTORY_SIZE))
         save_last_value(freq_ghz, cls.last_values_gpu_frequency,
                         theme_gpu_data['FREQUENCY']['LINE_GRAPH'].get("HISTORY_SIZE", DEFAULT_HISTORY_SIZE))
+        save_last_value(power, cls.last_values_gpu_power,
+                        theme_gpu_data['POWER']['LINE_GRAPH'].get("HISTORY_SIZE", DEFAULT_HISTORY_SIZE))
+        save_last_value(voltage, cls.last_values_gpu_voltage,
+                        theme_gpu_data['VOLTAGE']['LINE_GRAPH'].get("HISTORY_SIZE", DEFAULT_HISTORY_SIZE))
 
         ################################ for backward compatibility only
         gpu_mem_graph_data = theme_gpu_data['MEMORY']['GRAPH']
@@ -594,6 +600,40 @@ class Gpu:
             min_size=4
         )
         display_themed_line_graph(gpu_freq_line_graph_data, cls.last_values_gpu_frequency)
+
+        # GPU Power (W)
+        gpu_power_text_data = theme_gpu_data['POWER']['TEXT']
+        gpu_power_line_graph_data = theme_gpu_data['POWER']['LINE_GRAPH']
+        if math.isnan(power):
+            power = 0
+            if gpu_power_text_data['SHOW'] or gpu_power_line_graph_data['SHOW']:
+                logger.warning("Your GPU power is not supported yet")
+                gpu_power_text_data['SHOW'] = False
+                gpu_power_line_graph_data['SHOW'] = False
+        display_themed_value(
+            theme_data=gpu_power_text_data,
+            value=f'{power:.1f}',
+            unit=" W",
+            min_size=4
+        )
+        display_themed_line_graph(gpu_power_line_graph_data, cls.last_values_gpu_power)
+
+        # GPU Voltage (V)
+        gpu_voltage_text_data = theme_gpu_data['VOLTAGE']['TEXT']
+        gpu_voltage_line_graph_data = theme_gpu_data['VOLTAGE']['LINE_GRAPH']
+        if math.isnan(voltage):
+            voltage = 0
+            if gpu_voltage_text_data['SHOW'] or gpu_voltage_line_graph_data['SHOW']:
+                logger.warning("Your GPU voltage is not supported yet")
+                gpu_voltage_text_data['SHOW'] = False
+                gpu_voltage_line_graph_data['SHOW'] = False
+        display_themed_value(
+            theme_data=gpu_voltage_text_data,
+            value=f'{voltage:.2f}',
+            unit=" V",
+            min_size=4
+        )
+        display_themed_line_graph(gpu_voltage_line_graph_data, cls.last_values_gpu_voltage)
 
     @staticmethod
     def is_available():

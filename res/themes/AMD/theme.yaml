@@ -1,107 +1,74 @@
 ---
-author: "@mathoudebine"
+author: "@mathoudebine + Enhanced Custom V2"
 
 display:
   DISPLAY_SIZE: 8.8"
   DISPLAY_ORIENTATION: landscape
-  DISPLAY_RGB_LED: 224, 2, 48
-
-static_images:
-  BACKGROUND:
-    PATH:  background.png
-    X: 0
-    Y: 0
-    WIDTH: 1920
-    HEIGHT: 480
 
 static_text:
-  CPU:
-   TEXT: CPU
-   X: 1630
-   Y: 64
-   FONT: roboto-mono/RobotoMono-Bold.ttf
-   FONT_SIZE: 38
-   FONT_COLOR: 224, 2, 48
-   BACKGROUND_IMAGE: background.png
-  RAM:
-   TEXT: RAM
-   X: 1630
-   Y: 156
-   FONT: roboto-mono/RobotoMono-Bold.ttf
-   FONT_SIZE: 38
-   FONT_COLOR: 224, 2, 48
-   BACKGROUND_IMAGE: background.png
-  GPU:
-   TEXT: GPU
-   X: 58
-   Y: 66
-   FONT: roboto-mono/RobotoMono-Bold.ttf
-   FONT_SIZE: 70
-   FONT_COLOR: 224, 2, 48
-   BACKGROUND_IMAGE: background.png
-  TIME:
-   TEXT: TIME
-   X: 1533
-   Y: 332
-   FONT: roboto-mono/RobotoMono-Bold.ttf
-   FONT_SIZE: 36
-   FONT_COLOR: 205, 205, 205
-   BACKGROUND_IMAGE: background.png
+  # Columna 1: Juego
+  L_GAME: { TEXT: "--- MODE ---", X: 50, Y: 20, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_FPS:  { TEXT: "FPS:", X: 50, Y: 60, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_FT:   { TEXT: "TIME:", X: 50, Y: 100, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+
+  # Columna 2: CPU
+  L_CPU:  { TEXT: "--- CPU ---", X: 400, Y: 20, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_CPUL: { TEXT: "LOAD:", X: 400, Y: 60, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_CPUT: { TEXT: "TEMP:", X: 400, Y: 100, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_CPUP: { TEXT: "PWR:",  X: 400, Y: 140, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+
+  # Columna 3: GPU
+  L_GPU:  { TEXT: "--- GPU ---", X: 750, Y: 20, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_GPUL: { TEXT: "LOAD:", X: 750, Y: 60, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_GPUT: { TEXT: "TEMP:", X: 750, Y: 100, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_GPUP: { TEXT: "PWR:",  X: 750, Y: 140, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_GPUV: { TEXT: "VOLT:", X: 750, Y: 180, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+
+  # Columna 4: MEM
+  L_MEM:  { TEXT: "--- MEM ---", X: 1100, Y: 20, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_RAM:  { TEXT: "RAM:",  X: 1100, Y: 60, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_VRAM: { TEXT: "VRAM:", X: 1100, Y: 100, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+
+  # Columna 5: SYS (Red y Disco)
+  L_SYS:  { TEXT: "--- SYS ---", X: 1450, Y: 20, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_NETU: { TEXT: "UP:",    X: 1450, Y: 60, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_NETD: { TEXT: "DOWN:",  X: 1450, Y: 100, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  L_DISK: { TEXT: "DISK:",  X: 1450, Y: 140, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
 
 STATS:
-  CPU:
-    PERCENTAGE:
-      INTERVAL: 1
-      TEXT:
-        SHOW: True
-        SHOW_UNIT: True
-        X: 1700
-        Y: 62
-        FONT: roboto-mono/RobotoMono-Medium.ttf
-        FONT_SIZE: 80
-        FONT_COLOR: 205, 205, 205
-        BACKGROUND_IMAGE: background.png
-
   GPU:
+    VOLTAGE:
+      TEXT: { SHOW: True, X: 850, Y: 180, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  DISK:
     INTERVAL: 1
-    PERCENTAGE:
-      TEXT:
-        SHOW: True
-        SHOW_UNIT: True
-        X: 0
-        Y: 153
-        FONT: roboto-mono/RobotoMono-Medium.ttf
-        FONT_SIZE: 180
-        FONT_COLOR: 205, 205, 205
-        BACKGROUND_IMAGE: background.png
-
-  MEMORY:
+    USED:
+      PERCENT_TEXT: { SHOW: True, X: 1550, Y: 140, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png }
+  NET:
     INTERVAL: 1
-    VIRTUAL:
-      PERCENT_TEXT:
-        SHOW: True
-        SHOW_UNIT: True
-        X: 1700
-        Y: 152
-        FONT: roboto-mono/RobotoMono-Medium.ttf
-        FONT_SIZE: 80
-        FONT_COLOR: 205, 205, 205
-        BACKGROUND_IMAGE: background.png
-
+    ETH:
+      UPLOAD:   { TEXT: { SHOW: True, X: 1550, Y: 60, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+      DOWNLOAD: { TEXT: { SHOW: True, X: 1550, Y: 100, FONT_SIZE: 25, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
   DATE:
-    # For time display, it is recommended not to change the interval: keep to 1
     INTERVAL: 1
-    HOUR: # Format (12/24h, timezone translations) will match your computer locale
-      TEXT:
-        FORMAT: short # short (6:48 PM) / medium (6:48:53 PM) / long (6:48:53 PM UTC) / full (6:48:53 PM Coordinated Universal Time) / custom pattern e.g. "HH:mm:ss zzz" (6:48:53 EDT)
-        SHOW: True
-        X: 1644
-        Y: 330
-        WIDTH: 254
-        HEIGHT: 56
-        FONT: roboto/Roboto-Medium.ttf
-        FONT_SIZE: 70
-        FONT_COLOR: 205, 205, 205
-        BACKGROUND_IMAGE: background.png
-        ALIGN: left  # left / center / right
-        ANCHOR: rt   # Check https://pillow.readthedocs.io/en/stable/handbook/text-anchors.html
+    HOUR: { TEXT: { FORMAT: "HH:mm:ss", SHOW: True, X: 1650, Y: 420, FONT_SIZE: 35, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+
+  CUSTOM:
+    INTERVAL: 1
+    # NUEVO: Indicador de MODO
+    MangoHudMode:      { TEXT: { SHOW: True, X: 200, Y: 20, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    
+    # Columna 1 (MangoHud)
+    MangoHudFPS:       { TEXT: { SHOW: True, X: 150, Y: 60, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudFrametime: { TEXT: { SHOW: True, X: 150, Y: 100, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    # Columna 2 (MangoHud)
+    MangoHudCpuLoad:   { TEXT: { SHOW: True, X: 500, Y: 60, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudCpuTemp:   { TEXT: { SHOW: True, X: 500, Y: 100, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudCpuPower:  { TEXT: { SHOW: True, X: 500, Y: 140, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    # Columna 3 (MangoHud)
+    MangoHudGpuLoad:   { TEXT: { SHOW: True, X: 850, Y: 60, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudGpuTemp:   { TEXT: { SHOW: True, X: 850, Y: 100, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudGpuPower:  { TEXT: { SHOW: True, X: 850, Y: 140, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudGpuVoltage: { TEXT: { SHOW: True, X: 850, Y: 180, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    # Columna 4 (MangoHud)
+    MangoHudRam:       { TEXT: { SHOW: True, X: 1200, Y: 60, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }
+    MangoHudVram:      { TEXT: { SHOW: True, X: 1200, Y: 100, FONT_SIZE: 30, FONT_COLOR: [255, 255, 255], BACKGROUND_IMAGE: background.png } }

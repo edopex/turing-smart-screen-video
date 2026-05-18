@@ -20,8 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import queue
+import re
 import string
+import struct
 import time
 from enum import Enum
 from math import ceil
@@ -86,6 +89,17 @@ class Command(Enum):
     DISPLAY_BITMAP_2INCH = bytearray((0xc8, 0xef, 0x69, 0x00)) + bytearray((0x0E, 0x10))
     DISPLAY_BITMAP_5INCH = bytearray((0xc8, 0xef, 0x69, 0x00)) + bytearray((0x17, 0x70))
     DISPLAY_BITMAP_8INCH = bytearray((0xc8, 0xef, 0x69, 0x00)) + bytearray((0x38, 0x40))
+    DISPLAY_BITMAP_ON_VIDEO = bytearray((0xca, 0xef, 0x69, 0x00, 0x17, 0x70))
+
+    # VIDEO (Native SD card hardware playback)
+    START_VIDEO = bytearray((0x78, 0xef, 0x69, 0x00, 0x00, 0x00))
+    INIT_VIDEO_OVERLAY = bytearray((0xd0, 0xef, 0x69, 0x00, 0x00, 0x00))
+
+    # FILE MANAGEMENT (SD card)
+    LIST_FILES = bytearray((0x65, 0xef, 0x69, 0x00, 0x00, 0x00))
+    UPLOAD_FILE = bytearray((0x6f, 0xef, 0x69, 0x00, 0x00, 0x00))
+    DELETE_FILE = bytearray((0x66, 0xef, 0x69, 0x00, 0x00, 0x00))
+    GET_FILE_SIZE = bytearray((0x6e, 0xef, 0x69, 0x00, 0x00, 0x00))
 
     STARTMODE_DEFAULT = bytearray((0x00,))
     STARTMODE_IMAGE = bytearray((0x01,))
@@ -139,9 +153,9 @@ class LcdCommRevC(LcdComm):
     def auto_detect_com_port() -> Optional[str]:
         # If sleeping device is detected through serial number or vid/pid, try to wake it up
         for com_port in comports():
-            if com_port.serial_number == 'USB7INCH' or com_port.serial_number == 'CT21INCH':
+            if com_port.serial_number in ('USB7INCH', 'CT21INCH', 'CT88INCH'):
                 LcdCommRevC._wake_up_device(com_port)
-            elif com_port.vid == 0x1a86 and com_port.pid == 0xca21:
+            elif com_port.vid == 0x1a86 and com_port.pid in (0xca21, 0xca88):
                 LcdCommRevC._wake_up_device(com_port)
 
         return LcdCommRevC._get_awake_com_port(comports())
@@ -153,6 +167,8 @@ class LcdCommRevC(LcdComm):
             if com_port.serial_number == '20080411':
                 return com_port.device
             if com_port.vid == 0x0525 and com_port.pid == 0xa4a7:
+                return com_port.device
+            if com_port.vid == 0x1a86 and com_port.pid == 0xca88:
                 return com_port.device
             if com_port.vid == 0x1d6b and (com_port.pid == 0x0121 or com_port.pid == 0x0106):
                 return com_port.device
@@ -465,3 +481,128 @@ class LcdCommRevC(LcdComm):
         img_raw_data += b'\xef\x69'
 
         return img_raw_data, payload
+
+    # -------------------------------------------------------------------------
+    # Native SD Card File Management & Video Playback
+    # (Same protocol used by official Turzx software on Windows)
+    # -------------------------------------------------------------------------
+
+    def _file_cmd_write(self, cmd: Command, path: str):
+        """Send a file-management command with a path payload.
+        Bypasses the 250-byte NULL-padding logic to avoid corrupting the path."""
+        message = bytearray(cmd.value)
+        pyd = bytearray()
+        pyd.extend(len(path).to_bytes(1, 'big'))
+        pyd.extend(b'\x00' * 3)  # 3 null padding bytes
+        pyd.extend(map(ord, path))
+        message.extend(pyd)
+        self.serial_flush_input()
+        self.WriteData(message)
+
+    def _read_in_chunks(self, file_object, chunk_size=249):
+        """Generator that yields file data in serial-safe 249-byte chunks."""
+        while True:
+            data = file_object.read(chunk_size)
+            if not data:
+                break
+            yield data
+
+    def ListFiles(self, dir_path: str):
+        """List files and subdirectories at a given path on the screen's storage."""
+        self._file_cmd_write(Command.LIST_FILES, dir_path)
+        time.sleep(0.3)
+        raw = self.lcd_serial.read(10240)
+        stripped = raw.strip(b'\x00')
+        try:
+            reply = stripped.decode('ascii', errors='replace')
+        except Exception:
+            return [], []
+        directories_match = re.findall(r'dir:(.*)file', reply)
+        directories = []
+        if directories_match:
+            directories = [d for d in directories_match[0].split('/') if d]
+        files_match = re.findall(r'file:(.*)', reply)
+        files = []
+        if files_match:
+            files = [f for f in files_match[0].split('/') if f]
+        return directories, files
+
+    def ListVideosSDCard(self):
+        """List video files on the SD card (Turzx path: /mnt/SDCARD/video/)."""
+        return self.ListFiles("/mnt/SDCARD/video/")
+
+    def ListVideosInternal(self):
+        """List video files in internal storage (/root/video/)."""
+        return self.ListFiles("/root/video/")
+
+    def GetFileSize(self, file_path: str) -> int:
+        """Return the size in bytes of a file on the screen's storage. Returns 0 if not found."""
+        self._file_cmd_write(Command.GET_FILE_SIZE, file_path)
+        time.sleep(0.2)
+        raw = self.lcd_serial.read(1024)
+        stripped = raw.strip(b'\x00')
+        try:
+            return int(stripped.decode('ascii').strip())
+        except Exception:
+            return 0
+
+    def UploadFile(self, local_path: str, destination_path: str):
+        """
+        Upload a file from your PC to the screen's storage (internal or SD card).
+        destination_path examples:
+          - '/mnt/SDCARD/video/myvideo.mp4'   (SD card)
+          - '/root/video/myvideo.mp4'          (internal)
+        """
+        file_size_bytes = os.path.getsize(local_path)
+        logger.info(f"Uploading '{local_path}' ({file_size_bytes} bytes) -> '{destination_path}'...")
+
+        # Build upload command header manually (bypass 250-byte padding)
+        message = bytearray(Command.UPLOAD_FILE.value)
+        message.extend(len(destination_path).to_bytes(1, 'big'))
+        message.extend(b'\x00' * 3)
+        message.extend(map(ord, destination_path))
+        message.extend(struct.pack('<i', file_size_bytes))
+        self.serial_flush_input()
+        self.WriteData(message)
+
+        sent = 0
+        with open(local_path, "rb") as f:
+            for packet in self._read_in_chunks(f):
+                self._send_command(Command.SEND_PAYLOAD, payload=bytearray(packet), bypass_queue=True)
+                sent += len(packet)
+                pct = int(sent / file_size_bytes * 100)
+                if pct % 10 == 0:
+                    logger.info(f"  Upload progress: {pct}% ({sent}/{file_size_bytes} bytes)")
+        time.sleep(1)
+        self.lcd_serial.read_all()
+        logger.info("Upload complete.")
+
+    def DeleteFile(self, file_path: str):
+        """Delete a file from the screen's storage."""
+        self._file_cmd_write(Command.DELETE_FILE, file_path)
+
+    def StartVideo(self, video_path: str):
+        """
+        Tell the screen's firmware to play a video file from its own storage at full speed.
+        This is exactly how Turzx plays background videos — the USB bus carries ZERO video
+        data; the screen's internal chip decodes and renders at 60 FPS natively.
+
+        video_path examples:
+          - '/mnt/SDCARD/video/DeskDisplay.mp4'  (SD card)
+          - '/root/video/myvideo.mp4'             (internal storage)
+        """
+        video_size = self.GetFileSize(video_path)
+        if video_size == 0:
+            logger.error(f"Video '{video_path}' not found on device (size=0). "
+                         "Check path or upload with UploadFile().")
+            return False
+        logger.info(f"Starting native hardware video: '{video_path}' ({video_size} bytes)")
+        self._file_cmd_write(Command.START_VIDEO, video_path)
+        time.sleep(0.5)
+        self.lcd_serial.read_all()
+        return True
+
+    def StopVideo(self):
+        """Stop any currently playing video."""
+        self._send_command(Command.STOP_VIDEO, bypass_queue=True)
+

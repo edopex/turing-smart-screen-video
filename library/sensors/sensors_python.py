@@ -185,13 +185,13 @@ class Cpu(sensors.Cpu):
 class Gpu(sensors.Gpu):
     @staticmethod
     def stats() -> Tuple[
-        float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C)
+        float, float, float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C) / power (W) / voltage (V)
         if DETECTED_GPU == GpuType.AMD:
             return GpuAmd.stats()
         elif DETECTED_GPU == GpuType.NVIDIA:
             return GpuNvidia.stats()
         else:
-            return math.nan, math.nan, math.nan, math.nan, math.nan
+            return math.nan, math.nan, math.nan, math.nan, math.nan, math.nan, math.nan
 
     @staticmethod
     def fps() -> int:
@@ -244,7 +244,7 @@ class Gpu(sensors.Gpu):
 class GpuNvidia(sensors.Gpu):
     @staticmethod
     def stats() -> Tuple[
-        float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C)
+        float, float, float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C) / power (W) / voltage (V)
         # Unlike other sensors, Nvidia GPU with GPUtil pulls in all the stats at once
         nvidia_gpus = GPUtil.getGPUs()
 
@@ -277,12 +277,24 @@ class GpuNvidia(sensors.Gpu):
         except:
             temperature = math.nan
 
-        return load, memory_percentage, memory_used_mb, memory_total_mb, temperature
+        try:
+            power_all = [item.power for item in nvidia_gpus if getattr(item, "power", None) is not None]
+            power = sum(power_all) / len(power_all) if power_all else math.nan
+        except:
+            power = math.nan
+
+        voltage = math.nan
+
+        return load, memory_percentage, memory_used_mb, memory_total_mb, temperature, power, voltage
 
     @staticmethod
     def fps() -> int:
-        # Not supported by Python libraries
-        return -1
+        try:
+            with open('/tmp/turing_fps', 'r') as f:
+                content = f.read().strip()
+                return int(content) if content else 0
+        except:
+            return 0
 
     @staticmethod
     def fan_percent() -> float:
@@ -314,7 +326,7 @@ class GpuNvidia(sensors.Gpu):
 class GpuAmd(sensors.Gpu):
     @staticmethod
     def stats() -> Tuple[
-        float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C)
+        float, float, float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C) / power (W) / voltage (V)
         if pyamdgpuinfo:
             # Unlike other sensors, AMD GPU with pyamdgpuinfo pulls in all the stats at once
             pyamdgpuinfo.detect_gpus()
@@ -349,7 +361,17 @@ class GpuAmd(sensors.Gpu):
             except:
                 temperature = math.nan
 
-            return load, memory_percentage, memory_used, memory_total, temperature
+            try:
+                graphics_power = amd_gpu.query_power()
+            except:
+                graphics_power = math.nan
+
+            try:
+                graphics_voltage = amd_gpu.query_graphics_voltage()
+            except:
+                graphics_voltage = math.nan
+
+            return load, memory_percentage, memory_used, memory_total, temperature, graphics_power, graphics_voltage
         elif pyadl:
             amd_gpu = pyadl.ADLManager.getInstance().getDevices()[0]
 
@@ -364,12 +386,16 @@ class GpuAmd(sensors.Gpu):
                 temperature = math.nan
 
             # GPU memory data not supported by pyadl
-            return load, math.nan, math.nan, math.nan, temperature
+            return load, math.nan, math.nan, math.nan, temperature, math.nan, math.nan
 
     @staticmethod
     def fps() -> int:
-        # Not supported by Python libraries
-        return -1
+        try:
+            with open('/tmp/turing_fps', 'r') as f:
+                content = f.read().strip()
+                return int(content) if content else 0
+        except:
+            return 0
 
     @staticmethod
     def fan_percent() -> float:

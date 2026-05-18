@@ -56,7 +56,7 @@ class Gpu(ABC):
     @staticmethod
     @abstractmethod
     def stats() -> Tuple[
-        float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C)
+        float, float, float, float, float, float, float]:  # load (%) / used mem (%) / used mem (Mb) / total mem (Mb) / temp (°C) / power (W) / voltage (V)
         pass
 
     @staticmethod

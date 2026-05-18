@@ -122,6 +122,18 @@ STATS:
         SHOW: False
       LINE_GRAPH:
         SHOW: False
+    POWER:
+      TEXT:
+        SHOW: False
+        SHOW_UNIT: False
+      LINE_GRAPH:
+        SHOW: False
+    VOLTAGE:
+      TEXT:
+        SHOW: False
+        SHOW_UNIT: False
+      LINE_GRAPH:
+        SHOW: False
   MEMORY:
     INTERVAL: 0
     SWAP:
