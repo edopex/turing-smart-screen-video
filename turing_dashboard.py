@@ -21,7 +21,7 @@ def _f(b,sz):
         try: return ImageFont.truetype(f"/usr/share/fonts/{d}/{'DejaVuSans-Bold' if b else 'DejaVuSans'}.ttf",sz)
         except: pass
     return ImageFont.load_default()
-FT=_f(True,36); FV=_f(True,52); FL=_f(False,28); FS=_f(False,24)
+FT=_f(True,36); FV=_f(True,42); FL=_f(False,28); FS=_f(False,24)
 
 def spad(s,d):
     r=len(d)%250
@@ -135,11 +135,11 @@ def build():
     if gm:
         fps=int(mh.get("fps",0))
         d.text((cols[0],y0),"FPS",fill=CT,font=FT)
-        d.text((cols[0]+90,y0-15),f"{fps}",fill=fc(fps),font=FV)
+        d.text((cols[0]+90,y0),f"{fps}",fill=fc(fps),font=FV)
         d.text((cols[0]+230,y0+10),f"{mh.get('frametime',0):.1f}ms",fill=G,font=FL)
     else:
         d.text((cols[0],y0),"FPS",fill=CT,font=FT)
-        d.text((cols[0]+90,y0-15),"180",fill=fc(180),font=FV)
+        d.text((cols[0]+90,y0),"180",fill=fc(180),font=FV)
         d.text((cols[0]+230,y0+10),"5.5ms",fill=G,font=FL)
     d.text((cols[1],y0),"CPU",fill=CT,font=FT)
     d.text((cols[2],y0),"GPU",fill=CT,font=FT)
