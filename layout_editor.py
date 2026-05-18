@@ -114,6 +114,16 @@ class LayoutEditor:
                                        selectcolor="#161622", font=("Helvetica", 9, "bold"))
         self.bold_chk.pack(anchor=tk.W, pady=8)
 
+        # Font Family Dropdown
+        tk.Label(right_frame, text="Font Family:", fg="#a0a0aa", bg="#161622", font=("Helvetica", 9)).pack(anchor=tk.W, pady=2)
+        self.font_var = tk.StringVar(value="DejaVuSans")
+        self.font_menu = tk.OptionMenu(right_frame, self.font_var, *["DejaVuSans", "DejaVuSerif", "LiberationSans", "LiberationMono", "Ubuntu", "Roboto"],
+                                       command=lambda e: self.update_selected_property())
+        self.font_menu.configure(bg="#1e1e24", fg="#ffffff", activebackground="#2b2b36", activeforeground="#ffffff", 
+                                 highlightthickness=0, bd=0, font=("Helvetica", 9, "bold"))
+        self.font_menu["menu"].configure(bg="#161622", fg="#ffffff", activebackground="#00b4ff", activeforeground="#ffffff")
+        self.font_menu.pack(fill=tk.X, pady=8)
+
         # Footer Button Controls
         ctrl_frame = tk.Frame(left_frame, bg="#0f0f13")
         ctrl_frame.pack(pady=10)
@@ -158,8 +168,11 @@ class LayoutEditor:
                                 "y": self.layout[k][1],
                                 "size": 36,
                                 "bold": True,
-                                "visible": True
+                                "visible": True,
+                                "font": "DejaVuSans"
                             }
+                        elif "font" not in self.layout[k]:
+                            self.layout[k]["font"] = "DejaVuSans"
                     return
         except Exception as e:
             messagebox.showwarning("Error Loading Layout", f"Could not load layout.json, using defaults.\n{e}")
@@ -183,15 +196,25 @@ class LayoutEditor:
             "mem_title": "#00b4ff", "sys_title": "#00b4ff", "fps_val": "#00ff66", "sys_time": "#ffffff"
         }
 
+        font_family_map = {
+            "DejaVuSans": "DejaVu Sans",
+            "DejaVuSerif": "DejaVu Serif",
+            "LiberationSans": "Liberation Sans",
+            "LiberationMono": "Liberation Mono",
+            "Ubuntu": "Ubuntu",
+            "Roboto": "Roboto"
+        }
         for key, prop in self.layout.items():
             x = int(prop.get("x", 0) * SCALE)
             y = int(prop.get("y", 0) * SCALE)
             size = int(prop.get("size", 36) * SCALE)
             bold = prop.get("bold", True)
             visible = prop.get("visible", True)
+            font_name = prop.get("font", "DejaVuSans")
 
             txt = display_texts.get(key, f"[{key}]")
             font_weight = "bold" if bold else "normal"
+            font_family = font_family_map.get(font_name, "DejaVu Sans")
             
             # Use distinct visual indicators for active vs disabled (hidden) elements
             if visible:
@@ -210,7 +233,7 @@ class LayoutEditor:
             # Create text canvas item
             item = self.canvas.create_text(
                 x, y, text=txt, fill=color, 
-                font=("Helvetica", size, font_weight), 
+                font=(font_family, size, font_weight), 
                 anchor=tk.NW, tags=("draggable", key)
             )
 
@@ -289,20 +312,25 @@ class LayoutEditor:
             self.vis_var.set(prop.get("visible", True))
             self.size_scale.set(prop.get("size", 36))
             self.bold_var.set(prop.get("bold", True))
+            self.font_var.set(prop.get("font", "DejaVuSans"))
+            
             self.vis_chk.configure(state=tk.NORMAL)
             self.size_scale.configure(state=tk.NORMAL)
             self.bold_chk.configure(state=tk.NORMAL)
+            self.font_menu.configure(state=tk.NORMAL)
         else:
             self.sel_title_lbl.configure(text="Selected: None", fg="#a0a0aa")
             self.vis_chk.configure(state=tk.DISABLED)
             self.size_scale.configure(state=tk.DISABLED)
             self.bold_chk.configure(state=tk.DISABLED)
+            self.font_menu.configure(state=tk.DISABLED)
 
     def update_selected_property(self):
         if self.selected_key:
             self.layout[self.selected_key]["visible"] = self.vis_var.get()
             self.layout[self.selected_key]["size"] = self.size_scale.get()
             self.layout[self.selected_key]["bold"] = self.bold_var.get()
+            self.layout[self.selected_key]["font"] = self.font_var.get()
             self.save_layout()
             # Redraw selection highlights and font sizes instantly
             self.draw_elements()

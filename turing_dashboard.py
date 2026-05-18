@@ -51,17 +51,51 @@ running = True
 signal.signal(signal.SIGINT, lambda s,f: globals().update(running=False))
 signal.signal(signal.SIGTERM, lambda s,f: globals().update(running=False))
 
-def _f(b,sz):
-    for d in ["TTF","truetype/dejavu"]:
-        try: return ImageFont.truetype(f"/usr/share/fonts/{d}/{'DejaVuSans-Bold' if b else 'DejaVuSans'}.ttf",sz)
-        except: pass
+def _f(font_name, b, sz):
+    font_files = {
+        "DejaVuSans": ("DejaVuSans-Bold", "DejaVuSans"),
+        "DejaVuSerif": ("DejaVuSerif-Bold", "DejaVuSerif"),
+        "LiberationSans": ("LiberationSans-Bold", "LiberationSans-Regular"),
+        "LiberationMono": ("LiberationMono-Bold", "LiberationMono-Regular"),
+        "Ubuntu": ("Ubuntu-B", "Ubuntu-R"),
+        "Roboto": ("Roboto-Bold", "Roboto-Regular")
+    }
+    bold_file, reg_file = font_files.get(font_name, ("DejaVuSans-Bold", "DejaVuSans"))
+    target_name = bold_file if b else reg_file
+    
+    search_paths = [
+        f"/usr/share/fonts/truetype/dejavu/{target_name}.ttf",
+        f"/usr/share/fonts/TTF/{target_name}.ttf",
+        f"/usr/share/fonts/truetype/liberation/{target_name}.ttf",
+        f"/usr/share/fonts/liberation/{target_name}.ttf",
+        f"/usr/share/fonts/truetype/ubuntu/{target_name}.ttf",
+        f"/usr/share/fonts/ubuntu/{target_name}.ttf",
+        f"/usr/share/fonts/truetype/roboto/{target_name}.ttf",
+        f"/usr/share/fonts/roboto/{target_name}.ttf",
+    ]
+    for path in search_paths:
+        if os.path.exists(path):
+            try:
+                return ImageFont.truetype(path, sz)
+            except:
+                pass
+    try:
+        for root, dirs, files in os.walk("/usr/share/fonts"):
+            for file in files:
+                if file.lower() == f"{target_name.lower()}.ttf":
+                    try:
+                        return ImageFont.truetype(os.path.join(root, file), sz)
+                    except:
+                        pass
+    except:
+        pass
     return ImageFont.load_default()
 
 FONT_CACHE = {}
-def get_cached_font(size, bold):
-    key = (size, bold)
+def get_cached_font(font_name, size, bold):
+    key = (font_name, size, bold)
     if key not in FONT_CACHE:
-        FONT_CACHE[key] = _f(bold, size)
+        FONT_CACHE[key] = _f(font_name, bold, size)
     return FONT_CACHE[key]
 
 def spad(s,d):
@@ -178,18 +212,20 @@ def build():
     # Load layout
     ly = load_layout()
     def draw_text(key, val_str):
-        item = ly.get(key, DEFAULT_LAYOUT.get(key, {"x": 0, "y": 0, "size": 36, "bold": True, "visible": True}))
+        item = ly.get(key, DEFAULT_LAYOUT.get(key, {"x": 0, "y": 0, "size": 36, "bold": True, "visible": True, "font": "DejaVuSans"}))
         if isinstance(item, list):
             x, y = item[0], item[1]
             size, bold, visible = 36, True, True
+            font_name = "DejaVuSans"
         else:
             x = item.get("x", 0)
             y = item.get("y", 0)
             size = item.get("size", 36)
             bold = item.get("bold", True)
             visible = item.get("visible", True)
+            font_name = item.get("font", "DejaVuSans")
         if visible:
-            font = get_cached_font(size, bold)
+            font = get_cached_font(font_name, size, bold)
             d.text((x, y), str(val_str), fill=W, font=font)
     
     # Row 0: Titles
