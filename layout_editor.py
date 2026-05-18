@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
+from PIL import Image, ImageTk
 import json
 import os
 
@@ -124,6 +125,27 @@ class LayoutEditor:
         self.font_menu["menu"].configure(bg="#161622", fg="#ffffff", activebackground="#00b4ff", activeforeground="#ffffff")
         self.font_menu.pack(fill=tk.X, pady=8)
 
+        # Separator & Background Settings
+        tk.Frame(right_frame, height=1, bg="#252538").pack(fill=tk.X, pady=12)
+        tk.Label(right_frame, text="Background Mode:", fg="#00b4ff", bg="#161622", font=("Helvetica", 9, "bold")).pack(anchor=tk.W, pady=2)
+        
+        self.bg_mode_var = tk.StringVar(value="video")
+        self.bg_mode_menu = tk.OptionMenu(right_frame, self.bg_mode_var, *["video", "image"], command=self.update_global_config)
+        self.bg_mode_menu.configure(bg="#1e1e24", fg="#ffffff", activebackground="#2b2b36", activeforeground="#ffffff", 
+                                     highlightthickness=0, bd=0, font=("Helvetica", 9, "bold"))
+        self.bg_mode_menu["menu"].configure(bg="#161622", fg="#ffffff", activebackground="#00b4ff", activeforeground="#ffffff")
+        self.bg_mode_menu.pack(fill=tk.X, pady=5)
+
+        self.choose_img_btn = tk.Button(right_frame, text="Choose Image...", command=self.choose_background_image,
+                                        fg="#ffffff", bg="#252538", activeforeground="#ffffff", 
+                                        activebackground="#2b2b46", bd=0, padx=10, pady=4, 
+                                        font=("Helvetica", 9, "bold"))
+        self.choose_img_btn.pack(fill=tk.X, pady=5)
+
+        self.img_path_lbl = tk.Label(right_frame, text="No image selected", fg="#a0a0aa", bg="#161622", 
+                                     font=("Helvetica", 8), wraplength=140, justify=tk.LEFT)
+        self.img_path_lbl.pack(fill=tk.X, pady=2)
+
         # Footer Button Controls
         ctrl_frame = tk.Frame(left_frame, bg="#0f0f13")
         ctrl_frame.pack(pady=10)
@@ -171,8 +193,11 @@ class LayoutEditor:
                                 "visible": True,
                                 "font": "DejaVuSans"
                             }
-                        elif "font" not in self.layout[k]:
+                        elif k != "config" and "font" not in self.layout[k]:
                             self.layout[k]["font"] = "DejaVuSans"
+                    
+                    if "config" not in self.layout:
+                        self.layout["config"] = {"mode": "video", "image_path": ""}
                     return
         except Exception as e:
             messagebox.showwarning("Error Loading Layout", f"Could not load layout.json, using defaults.\n{e}")
@@ -181,6 +206,20 @@ class LayoutEditor:
     def draw_elements(self):
         self.canvas.delete("draggable")
         
+        # Load and draw background image if image mode is active
+        self.canvas.delete("bg_image")
+        cfg = self.layout.get("config", {"mode": "video", "image_path": ""})
+        if cfg.get("mode", "video") == "image" and cfg.get("image_path", ""):
+            bg_path = cfg.get("image_path", "")
+            if os.path.exists(bg_path):
+                try:
+                    pil_img = Image.open(bg_path).convert("RGBA").resize((WIDTH, HEIGHT))
+                    self.bg_photo = ImageTk.PhotoImage(pil_img)
+                    self.canvas.create_image(0, 0, image=self.bg_photo, anchor=tk.NW, tags="bg_image")
+                    self.canvas.tag_lower("bg_image")
+                except Exception as e:
+                    print(f"Error loading background image: {e}")
+
         display_texts = {
             "fps_title": "[FPS Title]", "fps_val": "180", "fps_ms": "5.5ms",
             "cpu_title": "[CPU Title]", "cpu_val": "45%", "cpu_temp": "55°C",
@@ -325,6 +364,15 @@ class LayoutEditor:
             self.bold_chk.configure(state=tk.DISABLED)
             self.font_menu.configure(state=tk.DISABLED)
 
+        # Update background settings fields from layout global config
+        cfg = self.layout.get("config", {"mode": "video", "image_path": ""})
+        self.bg_mode_var.set(cfg.get("mode", "video"))
+        img_path = cfg.get("image_path", "")
+        if img_path:
+            self.img_path_lbl.configure(text=os.path.basename(img_path))
+        else:
+            self.img_path_lbl.configure(text="No image selected")
+
     def update_selected_property(self):
         if self.selected_key:
             self.layout[self.selected_key]["visible"] = self.vis_var.get()
@@ -349,6 +397,25 @@ class LayoutEditor:
             self.update_sidebar()
             self.draw_elements()
             self.save_layout()
+
+    def choose_background_image(self):
+        file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.jpg *.jpeg *.bmp")])
+        if file_path:
+            if "config" not in self.layout:
+                self.layout["config"] = {"mode": "video", "image_path": ""}
+            self.layout["config"]["image_path"] = file_path
+            self.layout["config"]["mode"] = "image"
+            self.bg_mode_var.set("image")
+            self.img_path_lbl.configure(text=os.path.basename(file_path))
+            self.save_layout()
+            self.draw_elements()
+
+    def update_global_config(self, val=None):
+        if "config" not in self.layout:
+            self.layout["config"] = {"mode": "video", "image_path": ""}
+        self.layout["config"]["mode"] = self.bg_mode_var.get()
+        self.save_layout()
+        self.draw_elements()
 
 if __name__ == "__main__":
     root = tk.Tk()

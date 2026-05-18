@@ -187,8 +187,21 @@ W=(255,255,255)
 
 def build():
     global prev_net
-    # Draw in LANDSCAPE (1920x480)
-    img=Image.new('RGB',(1920,480),GREEN); d=ImageDraw.Draw(img)
+    # Load layout and global config
+    ly = load_layout()
+    cfg = ly.get("config", {"mode": "video", "image_path": ""})
+    bg_mode = cfg.get("mode", "video")
+    bg_path = cfg.get("image_path", "")
+    
+    if bg_mode == "image" and bg_path and os.path.exists(bg_path):
+        try:
+            img = Image.open(bg_path).convert('RGB').resize((1920, 480))
+        except:
+            img = Image.new('RGB', (1920, 480), (0, 0, 0))
+    else:
+        img = Image.new('RGB', (1920, 480), GREEN)
+        
+    d = ImageDraw.Draw(img)
     gpu=read_gpu(); ct=read_ct(); ru,rt=read_ram(); mh=read_mh()
     rx,tx=read_net(); now=time.time()
     
@@ -294,9 +307,14 @@ def phase1():
     spad(s,bytearray([0x7b,0xef,0x69,0x00,0x00,0x00,0x01,0x00,0x00,0x00,BRIGHTNESS]));time.sleep(0.2)
     spad(s,bytearray([0x7d,0xef,0x69,0x00,0x00,0x00,0x05,0x00,0x00,0x00,0x2d,0x02,0x00,0x01,0x00]));time.sleep(1)
     
-    cmd=bytearray([0x78,0xef,0x69,0x00,0x00,0x00,len(VIDEO_PATH),0x00,0x00,0x00])+VIDEO_PATH.encode('ascii')
-    spad(s,cmd);time.sleep(3);resp=s.read(1024).strip(b'\x00') # SAFE SLEEP FOR VIDEO
-    print(f"   Video: {'✅' if b'play_video_success' in resp else resp}")
+    ly = load_layout()
+    cfg = ly.get("config", {"mode": "video", "image_path": ""})
+    if cfg.get("mode", "video") == "video":
+        cmd=bytearray([0x78,0xef,0x69,0x00,0x00,0x00,len(VIDEO_PATH),0x00,0x00,0x00])+VIDEO_PATH.encode('ascii')
+        spad(s,cmd);time.sleep(3);resp=s.read(1024).strip(b'\x00') # SAFE SLEEP FOR VIDEO
+        print(f"   Video: {'✅' if b'play_video_success' in resp else resp}")
+    else:
+        print("   Image Mode active. Bypassing hardware SD video command.")
     
     spad(s,bytearray([0xd0,0xef,0x69,0x00,0x00,0x00,0x01]));time.sleep(1);s.read(1024)
     t=Image.new('RGB',(10,10),(255,0,0));bt,px=image_to_BGRA(t)
