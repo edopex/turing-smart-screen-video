@@ -14,6 +14,7 @@ UPDATE_SEC = 0.1
 
 LAYOUT_FILE = "/home/edopex/Documents/TURZX/turing-smart-screen-python/layout.json"
 DEFAULT_LAYOUT = {
+  "config": {"mode": "video", "image_path": ""},
   "fps_title": {"x": 80, "y": 110, "size": 36, "bold": True, "visible": True},
   "fps_val": {"x": 170, "y": 110, "size": 36, "bold": True, "visible": True},
   "fps_ms": {"x": 310, "y": 120, "size": 36, "bold": True, "visible": True},
@@ -32,7 +33,8 @@ DEFAULT_LAYOUT = {
   "mem_title": {"x": 1280, "y": 110, "size": 36, "bold": True, "visible": True},
   "ram_used": {"x": 1280, "y": 200, "size": 36, "bold": True, "visible": True},
   "vram_used": {"x": 1490, "y": 200, "size": 36, "bold": True, "visible": True},
-  "net_stat": {"x": 1280, "y": 290, "size": 36, "bold": True, "visible": True},
+  "net_down": {"x": 1280, "y": 290, "size": 36, "bold": True, "visible": True},
+  "net_up": {"x": 1490, "y": 290, "size": 36, "bold": True, "visible": True},
   "sys_title": {"x": 1620, "y": 110, "size": 36, "bold": True, "visible": True},
   "sys_time": {"x": 1620, "y": 200, "size": 36, "bold": True, "visible": True},
   "sys_disk": {"x": 1830, "y": 215, "size": 36, "bold": True, "visible": True}
@@ -248,6 +250,12 @@ def build():
     mem_title_txt = ly.get("mem_title", {}).get("text", "MEMORY")
     sys_title_txt = ly.get("sys_title", {}).get("text", "SYSTEM")
 
+    ram_prefix = ly.get("ram_used", {}).get("text", "RAM ")
+    vram_prefix = ly.get("vram_used", {}).get("text", "VRAM ")
+    disk_prefix = ly.get("sys_disk", {}).get("text", "DISK ")
+    net_down_prefix = ly.get("net_down", {}).get("text", "DOWN ↓")
+    net_up_prefix = ly.get("net_up", {}).get("text", "UP ↑")
+
     if gm:
         fps=int(mh.get("fps",0))
         draw_text("fps_title", fps_title_txt)
@@ -268,19 +276,19 @@ def build():
         draw_text("cpu_temp", f"{int(mh.get('cpu_temp',ct))}°C")
         draw_text("gpu_val", f"{mh.get('gpu_load',gpu['load']):.0f}%")
         draw_text("gpu_temp", f"{int(mh.get('gpu_temp',gpu['temp']))}°C")
-        draw_text("ram_used", f"RAM {mh.get('ram_used',ru):.1f}G")
+        draw_text("ram_used", f"{ram_prefix}{mh.get('ram_used',ru):.1f}G")
         vr=mh.get('gpu_vram_used',0)
-        if vr: draw_text("vram_used", f"VRAM {vr:.1f}G")
+        if vr: draw_text("vram_used", f"{vram_prefix}{vr:.1f}G")
     else:
         draw_text("cpu_val", f"{cpu_l:.0f}%")
         draw_text("cpu_temp", f"{ct}°C")
         draw_text("gpu_val", f"{gpu['load']}%")
         draw_text("gpu_temp", f"{gpu['temp']}°C")
         draw_text("gpu_power_desc", f"{gpu['power']}W")
-        draw_text("ram_used", f"RAM {ru:.1f}/{rt:.0f}G")
+        draw_text("ram_used", f"{ram_prefix}{ru:.1f}/{rt:.0f}G")
         
     draw_text("sys_time", time.strftime("%H:%M:%S"))
-    draw_text("sys_disk", f"DISK {du_perc:.0f}%")
+    draw_text("sys_disk", f"{disk_prefix}{du_perc:.0f}%")
     
     # Row 2: Secondary
     if gm:
@@ -295,7 +303,8 @@ def build():
         if cpu_mhz: draw_text("cpu_power", f"{cpu_mhz}MHz")
         draw_text("gpu_power", f"{gpu['volt']:.2f}V  Fan:{gpu['fan']}RPM")
         
-    draw_text("net_stat", f"NET ↓{dl:.0f} ↑{ul:.0f} KB/s")
+    draw_text("net_down", f"{net_down_prefix}{dl:.0f} KB/s")
+    draw_text("net_up", f"{net_up_prefix}{ul:.0f} KB/s")
     
 
     return img.rotate(90, expand=True)

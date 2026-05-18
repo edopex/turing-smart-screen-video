@@ -25,7 +25,8 @@ DEFAULT_LAYOUT = {
   "mem_title": {"x": 1280, "y": 110, "size": 36, "bold": True, "visible": True},
   "ram_used": {"x": 1280, "y": 200, "size": 36, "bold": True, "visible": True},
   "vram_used": {"x": 1490, "y": 200, "size": 36, "bold": True, "visible": True},
-  "net_stat": {"x": 1280, "y": 290, "size": 36, "bold": True, "visible": True},
+  "net_down": {"x": 1280, "y": 290, "size": 36, "bold": True, "visible": True},
+  "net_up": {"x": 1490, "y": 290, "size": 36, "bold": True, "visible": True},
   "sys_title": {"x": 1620, "y": 110, "size": 36, "bold": True, "visible": True},
   "sys_time": {"x": 1620, "y": 200, "size": 36, "bold": True, "visible": True},
   "sys_disk": {"x": 1830, "y": 215, "size": 36, "bold": True, "visible": True}
@@ -248,12 +249,13 @@ class LayoutEditor:
             "gpu_volt_fan": "1.05V 2100RPM", 
             "gpu_power_desc": "120W",
             "mem_title": self.layout.get("mem_title", {}).get("text", "MEMORY"), 
-            "ram_used": "7.5G/16.0G", 
-            "vram_used": "VRAM 4.2G", 
-            "net_stat": "NET ↓240 ↑45 KB/s",
+            "ram_used": f"{self.layout.get('ram_used', {}).get('text', 'RAM ')}7.5G", 
+            "vram_used": f"{self.layout.get('vram_used', {}).get('text', 'VRAM ')}4.2G", 
+            "net_down": f"{self.layout.get('net_down', {}).get('text', 'DOWN ↓')}240 KB/s",
+            "net_up": f"{self.layout.get('net_up', {}).get('text', 'UP ↑')}45 KB/s",
             "sys_title": self.layout.get("sys_title", {}).get("text", "SYSTEM"), 
             "sys_time": "12:34:56", 
-            "sys_disk": "DISK 35%"
+            "sys_disk": f"{self.layout.get('sys_disk', {}).get('text', 'DISK ')}35%"
         }
         
         colors = {
@@ -385,7 +387,8 @@ class LayoutEditor:
             self.bold_chk.configure(state=tk.NORMAL)
             self.font_menu.configure(state=tk.NORMAL)
             
-            if self.selected_key.endswith("_title"):
+            editable_keys = ["fps_title", "cpu_title", "gpu_title", "mem_title", "sys_title", "ram_used", "vram_used", "sys_disk", "net_down", "net_up"]
+            if self.selected_key in editable_keys:
                 self.text_frame.pack(fill=tk.X, pady=8)
                 self.text_var.set(prop.get("text", self.get_default_title(self.selected_key)))
             else:
@@ -411,7 +414,8 @@ class LayoutEditor:
     def update_selected_text(self):
         if getattr(self, "updating_sidebar", False):
             return
-        if self.selected_key and self.selected_key.endswith("_title"):
+        editable_keys = ["fps_title", "cpu_title", "gpu_title", "mem_title", "sys_title", "ram_used", "vram_used", "sys_disk", "net_down", "net_up"]
+        if self.selected_key and self.selected_key in editable_keys:
             self.layout[self.selected_key]["text"] = self.text_var.get()
             self.save_layout()
             self.draw_elements()
@@ -422,7 +426,12 @@ class LayoutEditor:
             "cpu_title": "CPU",
             "gpu_title": "GPU",
             "mem_title": "MEMORY",
-            "sys_title": "SYSTEM"
+            "sys_title": "SYSTEM",
+            "ram_used": "RAM ",
+            "vram_used": "VRAM ",
+            "sys_disk": "DISK ",
+            "net_down": "DOWN ↓",
+            "net_up": "UP ↑"
         }
         return defaults.get(key, "")
 
@@ -462,6 +471,7 @@ class LayoutEditor:
             self.img_path_lbl.configure(text=os.path.basename(file_path))
             self.save_layout()
             self.draw_elements()
+            messagebox.showinfo("Background Mode Changed", "Please restart the Turing Dashboard service in the Control Center to apply the changes (Stop -> Start).")
 
     def update_global_config(self, val=None):
         if "config" not in self.layout:
@@ -469,6 +479,7 @@ class LayoutEditor:
         self.layout["config"]["mode"] = self.bg_mode_var.get()
         self.save_layout()
         self.draw_elements()
+        messagebox.showinfo("Background Mode Changed", "Please restart the Turing Dashboard service in the Control Center to apply the changes (Stop -> Start).")
 
 if __name__ == "__main__":
     root = tk.Tk()
