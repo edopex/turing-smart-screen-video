@@ -62,7 +62,7 @@ Configurado para iniciar ambos servicios en segundo plano de manera 100% silenci
 ### 1. Clonar e Instalar Dependencias
 Clona este repositorio e instala las librerias necesarias:
 ```bash
-git clone https://github.com/TU_USUARIO/turing-smart-screen-python.git
+git clone https://github.com/edopex/turing-smart-screen-python.git
 cd turing-smart-screen-python
 python3 -m venv venv
 source venv/bin/activate
